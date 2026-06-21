@@ -92,5 +92,3 @@ def video_feed():
 @app.get("/api/stats")
 def get_stats():
     return latest_stats
-
-app.mount("/", StaticFiles(directory=FRONTEND_DIR), name="frontend")
