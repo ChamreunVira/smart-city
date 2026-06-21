@@ -1,0 +1,58 @@
+<div class="page" id="page-collect">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2">
+      <div class="cam-container">
+        <canvas id="collectCanvas" width="800" height="450"></canvas>
+        <div class="hud-overlay">
+          <div class="hud-top">
+            <div class="hud-badge" style="color:var(--orange); border-color:var(--orange)">STUDIO MODE: COLLECT
+            </div>
+          </div>
+          <div class="text-[10px] font-mono text-white/40">ALIGN FRUIT IN CENTER BOUNDING BOX</div>
+        </div>
+      </div>
+      <div class="mt-4 flex flex-wrap gap-3">
+        <select id="collectLabel"
+          class="px-4 py-2 bg-white/10 text-white rounded-lg border border-white/10 text-sm font-mono focus:outline-none">
+          <option value="banana">🍌 ចេក (Banana)</option>
+          <option value="apple">🍎 ប៉ោម (Apple)</option>
+        </select>
+        <button onclick="captureDataImage()"
+          class="px-6 py-2 bg-[#f0883e] hover:bg-orange-500 text-white font-mono text-sm rounded-lg transition-all">
+          📸 ថតរក្សាទុក (Capture)
+        </button>
+        <button onclick="clearDataset()"
+          class="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 font-mono text-sm rounded-lg transition-all">
+          🗑 សម្អាតទាំងអស់
+        </button>
+      </div>
+    </div>
+    <div class="space-y-4">
+      <div class="card">
+        <div class="card-title mb-4">ស្ថិតិសរុប (Dataset Summary)</div>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div class="bg-black/20 p-3 rounded-lg border border-white/5">
+            <div class="text-[10px] text-gray-500">ចេក (Captured)</div>
+            <div class="text-xl font-bold" id="dsBanCount">0</div>
+          </div>
+          <div class="bg-black/20 p-3 rounded-lg border border-white/5">
+            <div class="text-[10px] text-gray-500">ប៉ោម (Captured)</div>
+            <div class="text-xl font-bold" id="dsAppCount">0</div>
+          </div>
+        </div>
+        <div class="text-xs text-gray-400 leading-relaxed font-light">
+          <strong class="text-blue-400">YOLO Label Format:</strong><br>
+          <code class="block bg-black/40 p-2 rounded mt-1 font-mono text-[10px] text-gray-300">
+          &lt;class_id&gt; &lt;x_center&gt; &lt;y_center&gt; &lt;width&gt; &lt;height&gt;
+        </code>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title mb-3">រូបភាពដែលបានថត (Gallery)</div>
+        <div id="captureGallery" class="grid grid-cols-3 gap-2 max-h-[200px] overflow-y-auto">
+          <div class="text-[10px] text-gray-500 text-center col-span-3 py-6">គ្មានរូបភាពនៅឡើយទេ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

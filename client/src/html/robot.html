@@ -1,0 +1,61 @@
+<div class="page" id="page-robot">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Trash Sorting Simulator Lab (ប្រព័ន្ធបែងចែកសំរាមស្វ័យប្រវត្ត)</div>
+          <button id="btnToggleRobot" onclick="toggleRobotSorting()"
+            class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-mono">▶
+            ចាប់ផ្ដើម Lab</button>
+        </div>
+        <p class="text-xs text-gray-400 mb-4">កាមេរ៉ាពិនិត្យសំរាមនៅលើខ្សែក្រវ៉ាត់ រួចបញ្ជា Servo Gate
+          ឱ្យបែងចែកដបប្លាស្ទិក និងកំប៉ុងចូលធុងត្រឹមត្រូវដោយគ្មានការច្រឡំ។</p>
+        <div class="cam-container" style="aspect-ratio: 21/9;">
+          <canvas id="robotCanvas" width="1000" height="428"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="space-y-4">
+      <div class="card">
+        <div class="card-title mb-4">ស្ថានភាព Servo Gate</div>
+        <div class="space-y-4">
+          <div class="bg-black/30 p-3 rounded-lg border border-white/5">
+            <div class="flex justify-between text-xs font-mono">
+              <span>Gate A (Plastic)</span>
+              <span class="text-[#2f81f7]" id="servoA_angle">0° (Standby)</span>
+            </div>
+            <div class="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
+              <div class="h-full bg-[#2f81f7] transition-all" id="servoA_bar" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="bg-black/30 p-3 rounded-lg border border-white/5">
+            <div class="flex justify-between text-xs font-mono">
+              <span>Gate B (Cans)</span>
+              <span class="text-[#f0883e]" id="servoB_angle">0° (Standby)</span>
+            </div>
+            <div class="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
+              <div class="h-full bg-[#f0883e] transition-all" id="servoB_bar" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title mb-3">លទ្ធផលបែងចែកសំរាម</div>
+        <div class="grid grid-cols-2 gap-2 font-mono">
+          <div class="bg-black/30 p-3 rounded text-center border border-white/5">
+            <div class="text-[10px] text-gray-500">Plastic Sorted</div>
+            <div class="text-xl font-bold text-[#2f81f7]" id="robotPlasticSorted">0</div>
+          </div>
+          <div class="bg-black/30 p-3 rounded text-center border border-white/5">
+            <div class="text-[10px] text-gray-500">Cans Sorted</div>
+            <div class="text-xl font-bold text-[#f0883e]" id="robotCanSorted">0</div>
+          </div>
+          <div class="bg-black/30 p-3 rounded text-center border border-white/5 col-span-2">
+            <div class="text-[10px] text-gray-500">Sorting Accuracy</div>
+            <div class="text-xl font-bold text-green-400" id="robotAccuracy">100%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

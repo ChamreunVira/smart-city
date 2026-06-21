@@ -1,0 +1,94 @@
+<div class="page" id="page-parking">
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div class="lg:col-span-3">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🅿️ Smart Parking & Gate Access Lab (ប្រព័ន្ធចំណតឆ្លាតវៃ)</div>
+          <div class="flex gap-2">
+            <button id="btnToggleParking" onclick="toggleParkingSimulation()"
+              class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-mono transition-all flex items-center gap-1">
+              <span id="parkingBtnIcon">▶</span> <span id="parkingBtnText">ចាប់ផ្ដើម Lab</span>
+            </button>
+            <button onclick="spawnVehicleManually()"
+              class="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 rounded text-xs font-mono border border-white/10 transition-all">
+              🚗 បញ្ចេញឡាន (Spawn)
+            </button>
+          </div>
+        </div>
+        <p class="text-xs text-gray-400 mb-4">
+          ការប្រើប្រាស់សេនស័រ Ultrasonic វាស់ចម្ងាយរថយន្តapproach រួមផ្សំជាមួយ AI Vision (YOLO)
+          ដើម្បីពិនិត្យប្រភេទយានយន្ត និងបញ្ជា Servo Barrier Gate បើក-បិទស្វ័យប្រវត្ត។
+        </p>
+
+        <div class="cam-container" style="aspect-ratio: 16/9;">
+          <canvas id="parkingCanvas" width="800" height="450" class="w-full h-full block object-cover"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-4">
+
+      <div class="card">
+        <div class="card-title mb-4">ស្ថានភាព Hardware Telemetry</div>
+        <div class="space-y-4">
+          <div class="bg-black/30 p-3 rounded-lg border border-white/5">
+            <div class="flex justify-between text-xs font-mono">
+              <span>Ultrasonic HC-SR04</span>
+              <span class="text-orange-400 font-bold" id="parking_distance">-- cm</span>
+            </div>
+            <div class="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
+              <div class="h-full bg-orange-500 transition-all duration-200" id="parking_distance_bar"
+                style="width: 100%"></div>
+            </div>
+          </div>
+
+          <div class="bg-black/30 p-3 rounded-lg border border-white/5">
+            <div class="flex justify-between text-xs font-mono">
+              <span>Servo Gate Angle</span>
+              <span class="text-green-400 font-bold" id="parking_servo_angle">0° (Closed)</span>
+            </div>
+            <div class="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
+              <div class="h-full bg-green-500 transition-all duration-300" id="parking_servo_bar"
+                style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title mb-3">លទ្ធផលគ្រប់គ្រងចំណត (AI Lot Tracker)</div>
+        <div class="grid grid-cols-2 gap-2 font-mono mb-3">
+          <div class="bg-black/30 p-3 rounded text-center border border-white/5">
+            <div class="text-[10px] text-gray-500">Lot Capacity</div>
+            <div class="text-xl font-bold text-gray-300">6 Slots</div>
+          </div>
+          <div class="bg-black/30 p-3 rounded text-center border border-white/5">
+            <div class="text-[10px] text-gray-500">Available</div>
+            <div class="text-xl font-bold text-blue-400" id="parking_available_slots">6</div>
+          </div>
+          <div class="bg-black/30 p-3 rounded text-center border border-white/5 col-span-2">
+            <div class="text-[10px] text-gray-500">Occupancy Rate</div>
+            <div class="text-xl font-bold text-green-400" id="parking_occupancy_rate">0%</div>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-white/5 space-y-3">
+          <div>
+            <div class="flex justify-between text-[11px] font-mono text-gray-400 mb-1">
+              <span>ល្បឿនពិសោធន៍ (Sim Speed):</span>
+              <span id="parkingSpeedVal" class="text-blue-400">1x</span>
+            </div>
+            <input type="range" min="1" max="3" value="1" step="0.5"
+              oninput="document.getElementById('parkingSpeedVal').innerText = this.value + 'x'; simSpeedSetting = parseFloat(this.value);"
+              class="w-full accent-blue-500 bg-white/10 h-1 rounded-lg cursor-pointer">
+          </div>
+          <button onclick="resetParkingLotData()"
+            class="w-full py-1.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 font-mono text-xs rounded transition-all">
+            🗑 សម្អាតចំណតឡើងវិញ
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

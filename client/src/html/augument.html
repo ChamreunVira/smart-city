@@ -1,0 +1,23 @@
+<div class="page" id="page-augment">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Data Augmentation Simulation (ការបន្ថែមទិន្នន័យសិប្បនិម្មិត)</div>
+      <div class="flex gap-2">
+        <select id="augFruitSelect" onchange="initAug()"
+          class="px-3 py-1 bg-white/5 border border-white/10 rounded text-xs font-mono">
+          <option value="banana">🍌 Banana</option>
+          <option value="apple">🍎 Apple</option>
+        </select>
+        <button onclick="applyAllAugments()" class="px-3 py-1 bg-blue-600 text-white rounded text-xs">✨ Apply
+          All</button>
+        <button onclick="resetAugments()" class="px-3 py-1 bg-white/10 text-gray-300 rounded text-xs">↺
+          Reset</button>
+      </div>
+    </div>
+    <p class="text-xs text-gray-400 mb-4">ការផ្លាស់ប្តូររូបភាពដើម ដើម្បីបង្កើនប្រសិទ្ធភាពហ្វឹកហាត់របស់ម៉ូដែល AI
+      ឱ្យធន់នឹងលក្ខខណ្ឌបរិស្ថានផ្សេងៗ។</p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="augGrid">
+
+    </div>
+  </div>
+</div>
