@@ -10,12 +10,10 @@ from ultralytics import YOLO
 
 app = FastAPI()
 
-BASE_DIR = Path(__file__).resolve().parent
-ROOT_DIR = BASE_DIR.parent
-FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "client")
-MODEL_PATH = BASE_DIR / "models" / "yolov8n.pt"
+MODEL_PATH = "models/yolov8n.pt"
 
 model = YOLO(str(MODEL_PATH))
+
 capture = None
 
 FRUIT_IDS = [46, 47, 49]
@@ -86,12 +84,6 @@ def generate_frames():
 def shutdown_event():
     if capture is not None:
         capture.release()
-
-@app.get("/", response_class=HTMLResponse)
-def get_root():
-    with open(FRONTEND_DIR / "index.html", "r", encoding="utf-8") as f:
-        html_content = f.read()
-    return html_content
 
 @app.get("/video_feed")
 def video_feed():
