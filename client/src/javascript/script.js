@@ -1590,8 +1590,7 @@ window.onload = async () => {
   initializeAPIConnection();
 };
 
-const API_BASE_URL =
-  window.location.protocol === "file:" ? "http://localhost:8000" : "";
+const API_BASE_URL = "http://localhost:8000"
 
 // Check API connection status
 function checkAPIStatus() {
