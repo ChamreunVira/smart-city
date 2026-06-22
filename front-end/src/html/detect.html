@@ -1,0 +1,70 @@
+<div class="page" id="page-detect">
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div class="lg:col-span-3">
+      <div class="cam-container">
+        <img id="videoStream" style="width:100%;height:100%;object-fit:cover;display:block;"
+          alt="YOLOv8 Live Video Feed">
+        <canvas id="detectCanvas" width="800" height="450" style="display:none;"></canvas>
+        <div class="hud-overlay">
+          <div class="hud-top">
+            <div class="hud-badge">MODE: INFERENCE_SIM</div>
+            <div class="hud-badge" id="fpsDisplay">FPS: 45.0</div>
+          </div>
+          <div class="flex justify-between items-end">
+            <div class="text-[10px] font-mono text-white/40">YOLOv8n · 800x450 · Inference Engine</div>
+            <div class="hud-badge" style="color:var(--blue)">LIVE FEED</div>
+          </div>
+        </div>
+        <div
+          class="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-blue-500/10 to-transparent h-1 w-full animate-[scan_3s_linear_infinite]"
+          id="scanLine" style="display:none;"></div>
+      </div>
+
+      <div class="mt-4 flex flex-wrap gap-4 items-center justify-between">
+        <div class="flex gap-2">
+          <button id="btnToggle" onclick="toggleInference()"
+            class="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white font-mono text-sm rounded-lg transition-all flex items-center gap-2">
+            <span id="btnIcon">▶</span> <span id="btnText">ចាប់ផ្ដើម Detect</span>
+          </button>
+          <button onclick="resetDetectionStats()"
+            class="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 font-mono text-sm rounded-lg transition-all">
+            ↺ សូន្យឡើងវិញ
+          </button>
+        </div>
+        <div class="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
+          <span class="text-xs font-mono text-gray-400">Confidence Threshold:</span>
+          <input type="range" min="30" max="95" value="50"
+            oninput="confThreshold = this.value/100; document.getElementById('confVal').innerText = this.value + '%'"
+            class="w-24 accent-blue-500">
+          <span id="confVal" class="text-xs font-mono text-blue-400 w-8">50%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-4">
+      <div id="backendApiPanel" data-component="./partials/backend-api-panel.html"></div>
+      <div class="card">
+        <div class="card-title mb-4">ស្ថិតិការចាប់បាន (Live Statistics)</div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-black/20 p-3 rounded-lg border border-white/5">
+            <div class="text-[10px] text-gray-500 mb-1">ចេក (BANANA)</div>
+            <div class="text-2xl font-bold text-[#f5c842]" id="countBanana">0</div>
+          </div>
+          <div class="bg-black/20 p-3 rounded-lg border border-white/5">
+            <div class="text-[10px] text-gray-500 mb-1">ប៉ោម (APPLE)</div>
+            <div class="text-2xl font-bold text-[#e84c4c]" id="countApple">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card flex-1">
+        <div class="card-title mb-4">LOG ការវិភាគបច្ចុប្បន្ន</div>
+        <div id="logBox"
+          class="font-mono text-[10px] h-[220px] overflow-y-auto space-y-1 text-gray-400 p-2 bg-black/30 rounded-lg">
+          <div class="text-blue-400">[SYSTEM] ចាប់ផ្ដើមប្រឡងប្រព័ន្ធ...</div>
+          <div class="text-green-400">[READY] ម៉ូដែល YOLOv8 រួចរាល់សម្រាប់ការវិភាគ។</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

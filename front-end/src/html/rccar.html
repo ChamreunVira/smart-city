@@ -1,0 +1,213 @@
+<div class="page" id="page-rccar">
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+    <!-- Main Canvas Area -->
+    <div class="lg:col-span-3">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">🚗 RC Car Lab — ESP32-CAM Live Drive</div>
+                <div class="flex gap-2 flex-wrap">
+                    <button id="btnToggleRcCar" onclick="toggleRcCarSimulation()"
+                        class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-mono transition-all flex items-center gap-1">
+                        <span id="rcBtnIcon">▶</span> <span id="rcBtnText">ចាប់ផ្ដើម Lab</span>
+                    </button>
+                    <button onclick="spawnRcObstacle()"
+                        class="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 rounded text-xs font-mono border border-white/10 transition-all">
+                        🚧 ដាក់ឧបសគ្គ
+                    </button>
+                    <button onclick="rcClearAllObstacles()"
+                        class="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 rounded text-xs font-mono border border-white/10 transition-all">
+                        🧹 លុបឧបសគ្គ
+                    </button>
+                    <button onclick="rcTrainAI()"
+                        class="px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 rounded text-xs font-mono border border-purple-500/20 transition-all">
+                        🧠 Train AI
+                    </button>
+                </div>
+            </div>
+            <p class="text-xs text-gray-400 mb-4">
+                ត្រាប់តាមការបញ្ជូនវីដេអូ MJPEG ពី ESP32-CAM ច្របាច់ផ្សំជាមួយ Motor Driver UART 
+                ដើម្បីបញ្ជារថយន្ត RC ឱ្យជៀសវាងឧបសគ្គ និងតាមដានផ្លូវដោយស្វ័យប្រវត្តិ។
+            </p>
+
+            <div class="cam-container" style="aspect-ratio: 16/9;">
+                <canvas id="rcCarCanvas" width="800" height="450" class="w-full h-full block object-cover"></canvas>
+                <div class="hud-overlay">
+                    <div class="hud-top">
+                        <div class="hud-badge">MODE: <span id="rcModeLabel">MANUAL</span></div>
+                        <div class="hud-badge" id="rcFpsDisplay">FPS: 30.0</div>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div class="text-[10px] font-mono text-white/40">ESP32-CAM · MJPEG :81 · UART Motor Link</div>
+                        <div class="hud-badge" style="color:var(--blue)">LIVE FEED</div>
+                    </div>
+                </div>
+                <!-- AI Training Overlay -->
+                <div id="rcAiTrainOverlay" class="absolute top-3 right-3 hidden">
+                    <div class="px-3 py-1.5 bg-purple-600/80 rounded-lg text-xs text-white font-bold animate-pulse flex items-center gap-2">
+                        <span class="w-2 h-2 bg-green-400 rounded-full animate-ping"></span>
+                        🧠 AI TRAINING
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual D-Pad + keyboard controls -->
+            <div class="mt-4 flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-mono text-gray-400 mr-1">បញ្ជាដៃ:</span>
+                    <button id="rcBtnUp" onmousedown="rcStartControl('forward')" onmouseup="rcStopControl('forward')"
+                        ontouchstart="rcStartControl('forward')" ontouchend="rcStopControl('forward')"
+                        class="px-3 py-2 bg-white/5 hover:bg-white/10 active:bg-blue-600/30 text-gray-200 rounded text-xs font-mono border border-white/10 select-none touch-none">▲</button>
+                    <button id="rcBtnLeft" onmousedown="rcStartControl('left')" onmouseup="rcStopControl('left')"
+                        ontouchstart="rcStartControl('left')" ontouchend="rcStopControl('left')"
+                        class="px-3 py-2 bg-white/5 hover:bg-white/10 active:bg-blue-600/30 text-gray-200 rounded text-xs font-mono border border-white/10 select-none touch-none">◀</button>
+                    <button id="rcBtnBrake" onmousedown="rcStartControl('brake')" onmouseup="rcStopControl('brake')"
+                        ontouchstart="rcStartControl('brake')" ontouchend="rcStopControl('brake')"
+                        class="px-3 py-2 bg-red-600/10 hover:bg-red-600/20 active:bg-red-600/30 text-red-400 rounded text-xs font-mono border border-white/10 select-none touch-none">⏹</button>
+                    <button id="rcBtnRight" onmousedown="rcStartControl('right')" onmouseup="rcStopControl('right')"
+                        ontouchstart="rcStartControl('right')" ontouchend="rcStopControl('right')"
+                        class="px-3 py-2 bg-white/5 hover:bg-white/10 active:bg-blue-600/30 text-gray-200 rounded text-xs font-mono border border-white/10 select-none touch-none">▶</button>
+                    <button id="rcBtnDown" onmousedown="rcStartControl('reverse')" onmouseup="rcStopControl('reverse')"
+                        ontouchstart="rcStartControl('reverse')" ontouchend="rcStopControl('reverse')"
+                        class="px-3 py-2 bg-white/5 hover:bg-white/10 active:bg-blue-600/30 text-gray-200 rounded text-xs font-mono border border-white/10 select-none touch-none">▼</button>
+                    <span class="text-[10px] font-mono text-gray-500 ml-2 hidden sm:inline">⌨ W A S D / Arrows · Space = Brake</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="rcToggleAutoMode()" id="rcAutoBtn"
+                        class="px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 font-mono text-xs rounded-lg border border-purple-500/20 transition-all">
+                        🧭 Auto-Avoid
+                    </button>
+                    <button onclick="rcToggleDeliveryMode()" id="rcDeliveryBtn"
+                        class="px-4 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 font-mono text-xs rounded-lg border border-emerald-500/20 transition-all">
+                        🚀 Delivery AI
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="space-y-4">
+
+        <!-- AI Delivery Assistant -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">🍔 AI Delivery Assistant</div>
+                <span id="rcDeliveryStatus" class="text-[10px] text-gray-500">IDLE</span>
+            </div>
+
+            <div id="rcOrderPanel" class="bg-black/30 p-3 rounded-lg border border-white/5 mb-3 text-xs font-mono space-y-1">
+                <div class="flex justify-between"><span class="text-gray-500">ការកម្មង់</span><span id="rcOrderId" class="text-purple-400">—</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">ហាង</span><span id="rcOrderRestaurant" class="text-orange-400 text-right">មិនទាន់មាន</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">អតិថិជន</span><span id="rcOrderCustomer" class="text-blue-400 text-right">មិនទាន់មាន</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">ស្ថានភាព</span><span id="rcOrderStatus" class="text-gray-400">IDLE</span></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 font-mono mb-3">
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5">
+                    <div class="text-[10px] text-gray-500">បានដឹកជញ្ជូន</div>
+                    <div class="text-xl font-bold text-emerald-400" id="rcDeliveriesCount">0</div>
+                </div>
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5">
+                    <div class="text-[10px] text-gray-500">ចំណូល</div>
+                    <div class="text-xl font-bold text-amber-400" id="rcEarnings">$0.00</div>
+                </div>
+            </div>
+
+            <div id="rcAiChatLog" class="font-mono text-[10px] h-[100px] overflow-y-auto space-y-1.5 p-2 bg-black/30 rounded-lg">
+                <div class="text-gray-500 italic">AI Dispatcher រង់ចាំការកម្មង់...</div>
+            </div>
+        </div>
+
+        <!-- Telemetry -->
+        <div class="card">
+            <div class="card-title mb-4">ESP32-CAM Telemetry</div>
+            <div class="space-y-4">
+                <div class="bg-black/30 p-3 rounded-lg border border-white/5">
+                    <div class="flex justify-between text-xs font-mono">
+                        <span>ល្បឿន</span>
+                        <span class="text-cyan-400 font-bold" id="rcSpeed">0 cm/s</span>
+                    </div>
+                    <div class="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div class="h-full bg-cyan-500 transition-all duration-200" id="rcSpeedBar" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <div class="bg-black/30 p-3 rounded-lg border border-white/5">
+                    <div class="flex justify-between text-xs font-mono">
+                        <span>មុំបត់</span>
+                        <span class="text-orange-400 font-bold" id="rcSteerAngle">0°</span>
+                    </div>
+                    <div class="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div class="h-full bg-orange-500 transition-all duration-200" id="rcSteerBar" style="width:50%"></div>
+                    </div>
+                </div>
+
+                <div class="bg-black/30 p-3 rounded-lg border border-white/5">
+                    <div class="flex justify-between text-xs font-mono">
+                        <span>ឧបសគ្គខាងមុខ</span>
+                        <span class="text-green-400 font-bold" id="rcDistance">> 200 cm</span>
+                    </div>
+                    <div class="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div class="h-full bg-green-500 transition-all duration-200" id="rcDistanceBar" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="card">
+            <div class="card-title mb-3">ស្ថានភាពទូទៅ</div>
+            <div class="grid grid-cols-2 gap-2 font-mono">
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5">
+                    <div class="text-[10px] text-gray-500">ថ្ម</div>
+                    <div class="text-xl font-bold text-green-400" id="rcBattery">8.4V</div>
+                </div>
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5">
+                    <div class="text-[10px] text-gray-500">WiFi Signal</div>
+                    <div class="text-xl font-bold text-blue-400" id="rcWifi">-42 dBm</div>
+                </div>
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5 col-span-2">
+                    <div class="text-[10px] text-gray-500">ចម្ងាយសរុប</div>
+                    <div class="text-xl font-bold text-purple-400" id="rcTotalDist">0.0 m</div>
+                </div>
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5 col-span-2">
+                    <div class="text-[10px] text-gray-500">AI Epochs</div>
+                    <div class="text-xl font-bold text-purple-400" id="rcEpochDisplay">0</div>
+                </div>
+            </div>
+
+            <div class="pt-2 border-t border-white/5 mt-3">
+                <div class="flex justify-between text-[11px] font-mono text-gray-400 mb-1">
+                    <span>Max Throttle:</span>
+                    <span id="rcThrottleVal" class="text-blue-400">60%</span>
+                </div>
+                <input type="range" min="20" max="100" value="60" step="5"
+                    oninput="document.getElementById('rcThrottleVal').innerText = this.value + '%'; rcMaxThrottle = parseInt(this.value);"
+                    class="w-full accent-blue-500 bg-white/10 h-1 rounded-lg cursor-pointer">
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mt-3">
+                <button onclick="resetRcCarData()"
+                    class="py-1.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 font-mono text-xs rounded transition-all">
+                    🗑 Reset
+                </button>
+                <button onclick="rcTrainAI()"
+                    class="py-1.5 bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 font-mono text-xs rounded transition-all">
+                    🧠 Train AI
+                </button>
+            </div>
+        </div>
+
+        <!-- Log -->
+        <div class="card">
+            <div class="card-title mb-3">📜 Serial Log</div>
+            <div id="rcLogBox" class="font-mono text-[10px] h-[80px] overflow-y-auto space-y-1 text-gray-400 p-2 bg-black/30 rounded-lg">
+                <div class="text-blue-400">[SYSTEM] RC Car Lab initialized</div>
+                <div class="text-green-400">[READY] ESP32-CAM & Motor Driver Link ready</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>

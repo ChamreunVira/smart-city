@@ -1,0 +1,33 @@
+<div class="page" id="page-gradcam">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Grad-CAM Feature Activation (ផែនទីកម្ដៅសម្រេចចិត្តរបស់ AI)</div>
+        </div>
+        <p class="text-xs text-gray-400 mb-4">បង្ហាញតំបន់ចក្ខុវិញ្ញាណដែលម៉ូដែល YOLOv8
+          ផ្ដោតយកចិត្តទុកដាក់បំផុតដើម្បីកំណត់អត្តសញ្ញាណផ្លែឈើ។</p>
+        <div class="cam-container">
+          <canvas id="gradCamCanvas" width="800" height="450"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="space-y-4">
+      <div class="card">
+        <div class="card-title mb-4">ជម្រើសផ្លែឈើ</div>
+        <div class="flex gap-2">
+          <button onclick="showGradCam('banana')" id="gcBtnBanana"
+            class="flex-1 py-2 bg-blue-600 text-white rounded text-xs font-mono">🍌 Banana</button>
+          <button onclick="showGradCam('apple')" id="gcBtnApple"
+            class="flex-1 py-2 bg-white/10 text-gray-400 rounded text-xs font-mono">🍎 Apple</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title mb-3">របាយការណ៍បច្ចេកទេស (Features Weight)</div>
+        <div class="space-y-4 text-xs font-mono" id="gcFeatureResults">
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

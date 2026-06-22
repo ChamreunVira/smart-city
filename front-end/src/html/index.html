@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCity Pro — Project Dashboard</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="header">
+        <div class="logo">
+            <span style="color:var(--blue)">⚡</span> SmartCity <span style="font-weight:300;opacity:0.7;">PRO</span>
+            <span class="logo-badge">V1.1 - កម្រិតខ្ពស់</span>
+        </div>
+        <div class="header-tools">
+            <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> SYSTEM: ONLINE</div>
+            <div>DEVICE: RASPBERRY PI 4</div>
+            <div>ENGINE: YOLOv8-NANO</div>
+            <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark and light theme">
+                <span id="themeIcon">☾</span>
+                <span id="themeLabel">Dark</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="app">
+        <nav id="sidebar">
+            <div class="nav-item active" onclick="nav('guide')">📋 គម្រោងទីក្រុងឆ្លាតវៃ</div>
+            <div class="nav-section">ការចាប់រូបភាព (Computer Vision)</div>
+            <div class="nav-item" onclick="nav('detect')">🎯 ការ Detect បច្ចុប្បន្ន</div>
+            <div class="nav-item" onclick="nav('collect')">📸 ប្រមូលទិន្នន័យ (Dataset)</div>
+            <div class="nav-item" data-page="augment" onclick="nav('augment')">🖼️ Data Augmentation</div>
+
+            <div class="nav-section">ការវាយតម្លៃម៉ូដែល (Evaluation)</div>
+            <div class="nav-item" onclick="nav('confusion')">📊 Confusion Matrix</div>
+            <div class="nav-item" onclick="nav('models')">⚡ ប្រៀបធៀបម៉ូដែល</div>
+            <div class="nav-item" onclick="nav('training')">📈 Training Metrics</div>
+            <div class="nav-item" onclick="nav('gradcam')">🔍 Explainable AI (Grad-CAM)</div>
+
+            <div class="nav-section">Smart City & Simulator Labs</div>
+            <div class="nav-item" onclick="nav('robot')">♻️ Trash Sorting Lab</div>
+            <div class="nav-item" onclick="nav('smartcity')">🏙️ Smart City Lab</div>
+            <div class="nav-item" onclick="nav('parking')">🅿️ Smart Parking Lab</div>
+            <div class="nav-item" onclick="nav('edge')">🖥️ Edge AI Dashboard</div>
+            <div class="nav-item" onclick="nav('iot')">📡 IoT Integration (MQTT)</div>
+            <div class="nav-item" data-page="drone" onclick="nav('drone')">🚁 Drone Learning Lab</div>
+            <div class="nav-item" onclick="nav('rccar')">🚗 RC Car Lab</div>
+            <div class="nav-item" onclick="nav('chatbot')">🤖 Chatbot AI Assistant</div>
+        </nav>
+
+        <div id="content">
+            <!-- Pages will be loaded here dynamically -->
+        </div>
+    </div>
+
+    <script src="../javascript/script.js"></script>
+    <script src="../javascript/mqtt-simulator.js"></script>
+    <script src="../javascript/rc-car-simulator.js"></script>
+    <script src="../javascript/smart-parking-simulator.js"></script>
+    <script src="../javascript/loader.js"></script>
+    <script src="../javascript/drone-simulator.js"></script>
+</body>
+</html>

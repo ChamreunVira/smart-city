@@ -1,0 +1,3438 @@
+<!DOCTYPE html>
+<html lang="km">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartCity Pro — Project Dashboard</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+  <div id="header">
+    <div class="logo">
+      <span style="color:var(--blue)">⚡</span> SmartCity <span style="font-weight:300;opacity:0.7;">PRO</span>
+      <span class="logo-badge">V1.1 - កម្រិតខ្ពស់</span>
+    </div>
+    <div class="header-tools">
+      <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> SYSTEM:
+        ONLINE</div>
+      <div>DEVICE: RASPBERRY PI 4</div>
+      <div>ENGINE: YOLOv8-NANO</div>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark and light theme">
+        <span id="themeIcon">☾</span>
+        <span id="themeLabel">Dark</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="app">
+    <nav id="sidebar">
+      <div class="nav-item active" onclick="nav('guide')">📋 គម្រោងទីក្រុងឆ្លាតវៃ</div>
+      <div class="nav-section">ការចាប់រូបភាព (Computer Vision)</div>
+      <div class="nav-item" onclick="nav('detect')">🎯 ការ Detect បច្ចុប្បន្ន</div>
+      <div class="nav-item" onclick="nav('collect')">📸 ប្រមូលទិន្នន័យ (Dataset)</div>
+      <div class="nav-item" onclick="nav('augment')">🖼️ Data Augmentation</div>
+
+      <div class="nav-section">ការវាយតម្លៃម៉ូដែល (Evaluation)</div>
+      <div class="nav-item" onclick="nav('confusion')">📊 Confusion Matrix</div>
+      <div class="nav-item" onclick="nav('models')">⚡ ប្រៀបធៀបម៉ូដែល</div>
+      <div class="nav-item" onclick="nav('training')">📈 Training Metrics</div>
+      <div class="nav-item" onclick="nav('gradcam')">🔍 Explainable AI (Grad-CAM)</div>
+
+      <div class="nav-section">Smart City & Simulator Labs</div>
+      <div class="nav-item" onclick="nav('robot')">♻️ Trash Sorting Lab</div>
+      <div class="nav-item" onclick="nav('smartcity')">🏙️ Smart City Lab</div>
+      <div class="nav-item" onclick="nav('parking')">🅿️ Smart Parking Lab</div>
+      <div class="nav-item" onclick="nav('edge')">🖥️ Edge AI Dashboard</div>
+      <div class="nav-item" onclick="nav('iot')">📡 IoT Integration (MQTT)</div>
+      <div class="nav-item" onclick="nav('drone')">🚁 Drone Learning Lab</div>
+      <div class="nav-item" onclick="nav('rccar')">🚗 RC Car Lab</div>
+      <div class="nav-item" onclick="nav('chatbot')">🤖 Chatbot AI Assistant</div>
+
+    </nav>
+
+    <div id="content">
+
+      <div class="page" id="page-rccar">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+          <div class="lg:col-span-3">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">🚗 RC Car Lab — ESP32-CAM Live Drive (ប្រព័ន្ធបញ្ជារថយន្ត RC)</div>
+                <div class="flex gap-2">
+                  <button id="btnToggleRcCar" onclick="toggleRcCarSimulation()"
+                    class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-mono transition-all flex items-center gap-1">
+                    <span id="rcBtnIcon">▶</span> <span id="rcBtnText">ចាប់ផ្ដើម Lab</span>
+                  </button>
+                  <button onclick="spawnRcObstacle()"
+                    class="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 rounded text-xs font-mono border border-white/10 transition-all">
+                    🚧 ដាក់ឧបសគ្គ (Spawn Obstacle)
+                  </button>
+                </div>
+              </div>
+              <p class="text-xs text-gray-400 mb-4">
+                ត្រាប់តាមការបញ្ជូនវីដេអូ MJPEG ពី ESP32-CAM (AP Mode, port 81) ច្របាច់ផ្សំជាមួយ Motor
+                Driver UART ដើម្បីបញ្ជារថយន្ត RC ឱ្យជៀសវាងឧបសគ្គ និងតាមដានផ្លូវដោយស្វ័យប្រវត្តិ ឬដៃ។
+              </p>
+
+              <div class="cam-container" style="aspect-ratio: 16/9;">
+                <canvas id="rcCarCanvas" width="800" height="450" class="w-full h-full block object-cover"></canvas>
+                <div class="hud-overlay">
+                  <div class="hud-top">
+                    <div class="hud-badge">MODE: <span id="rcModeLabel">MANUAL</span></div>
+                    <div class="hud-badge" id="rcFpsDisplay">FPS: 30.0</div>
+                  </div>
+                  <div class="flex justify-between items-end">
+                    <div class="text-[10px] font-mono text-white/40">ESP32-CAM · MJPEG :81 · UART Motor Link</div>
+                    <div class="hud-badge" style="color:var(--blue)">LIVE FEED</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Manual D-Pad + keyboard controls -->
+              <div class="mt-4 flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono text-gray-400 mr-1">បញ្ជាដៃ (Manual Drive):</span>
+                  <button id="rcBtnUp" onmousedown="rcStartControl('forward')" onmouseup="rcStopControl('forward')"
+                    ontouchstart="rcStartControl('forward')" ontouchend="rcStopControl('forward')"
+                    class="px-3 py-2 bg-white/5 hover:bg-white/10 active:bg-blue-600/30 text-gray-200 rounded text-xs font-mono border border-white/10 select-none">▲</button>
+                  <button id="rcBtnLeft" onmousedown="rcStartControl('left')" onmouseup="rcStopControl('left')"
+                    ontouchstart="rcStartControl('left')" ontouchend="rcStopControl('left')"
+                    class="px-3 py-2 bg-white/5 hover:bg-white/10 active:bg-blue-600/30 text-gray-200 rounded text-xs font-mono border border-white/10 select-none">◀</button>
+                  <button id="rcBtnBrake" onmousedown="rcStartControl('brake')" onmouseup="rcStopControl('brake')"
+                    ontouchstart="rcStartControl('brake')" ontouchend="rcStopControl('brake')"
+                    class="px-3 py-2 bg-red-600/10 hover:bg-red-600/20 active:bg-red-600/30 text-red-400 rounded text-xs font-mono border border-white/10 select-none">⏹</button>
+                  <button id="rcBtnRight" onmousedown="rcStartControl('right')" onmouseup="rcStopControl('right')"
+                    ontouchstart="rcStartControl('right')" ontouchend="rcStopControl('right')"
+                    class="px-3 py-2 bg-white/5 hover:bg-white/10 active:bg-blue-600/30 text-gray-200 rounded text-xs font-mono border border-white/10 select-none">▶</button>
+                  <button id="rcBtnDown" onmousedown="rcStartControl('reverse')" onmouseup="rcStopControl('reverse')"
+                    ontouchstart="rcStartControl('reverse')" ontouchend="rcStopControl('reverse')"
+                    class="px-3 py-2 bg-white/5 hover:bg-white/10 active:bg-blue-600/30 text-gray-200 rounded text-xs font-mono border border-white/10 select-none">▼</button>
+                  <span class="text-[10px] font-mono text-gray-500 ml-2 hidden sm:inline">⌨ W A S D / Arrows · Space =
+                    Brake</span>
+                </div>
+                <button onclick="rcToggleAutoMode()" id="rcAutoBtn"
+                  class="px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 font-mono text-xs rounded-lg border border-purple-500/20 transition-all">
+                  🧭 បើក Auto-Avoid Mode
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+
+            <!-- AI Delivery Assistant -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">🍔 AI Delivery Assistant</div>
+                <button id="rcDeliveryBtn" onclick="toggleRcDeliveryMode()"
+                  class="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 rounded text-xs font-mono border border-emerald-500/20 transition-all">
+                  🚀 ចាប់ផ្ដើម Delivery AI
+                </button>
+              </div>
+
+              <div id="rcOrderPanel"
+                class="bg-black/30 p-3 rounded-lg border border-white/5 mb-3 text-xs font-mono space-y-1">
+                <div class="flex justify-between"><span class="text-gray-500">ការកម្មង់ (Order)</span><span
+                    id="rcOrderId" class="text-gray-300">—</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">ហាង (Restaurant)</span><span
+                    id="rcOrderRestaurant" class="text-orange-400 text-right">មិនទាន់មាន</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">អតិថិជន (Customer)</span><span
+                    id="rcOrderCustomer" class="text-blue-400 text-right">មិនទាន់មាន</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">មុខម្ហូប (Item)</span><span
+                    id="rcOrderItem" class="text-gray-300 text-right">—</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">ស្ថានភាព (Status)</span><span
+                    id="rcOrderStatus" class="text-gray-400">IDLE</span></div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 font-mono mb-3">
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5">
+                  <div class="text-[10px] text-gray-500">បានដឹកជញ្ជូន</div>
+                  <div class="text-xl font-bold text-emerald-400" id="rc_deliveries_count">0</div>
+                </div>
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5">
+                  <div class="text-[10px] text-gray-500">ប្រាក់ចំណូល (Earnings)</div>
+                  <div class="text-xl font-bold text-amber-400" id="rc_earnings">$0.00</div>
+                </div>
+              </div>
+
+              <div id="rcAiChatLog"
+                class="font-mono text-[10px] h-[120px] overflow-y-auto space-y-1.5 p-2 bg-black/30 rounded-lg">
+                <div class="text-gray-500 italic">AI Dispatcher រង់ចាំការកម្មង់... ចុច "ចាប់ផ្ដើម Delivery AI"
+                  ដើម្បីចាប់ផ្ដើម។</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title mb-4">ESP32-CAM Telemetry</div>
+              <div class="space-y-4">
+                <div class="bg-black/30 p-3 rounded-lg border border-white/5">
+                  <div class="flex justify-between text-xs font-mono">
+                    <span>ល្បឿន (Speed)</span>
+                    <span class="text-blue-400 font-bold" id="rc_speed">0 cm/s</span>
+                  </div>
+                  <div class="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
+                    <div class="h-full bg-blue-500 transition-all duration-200" id="rc_speed_bar" style="width:0%">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-black/30 p-3 rounded-lg border border-white/5">
+                  <div class="flex justify-between text-xs font-mono">
+                    <span>មុំបង្វិល (Steering Servo)</span>
+                    <span class="text-green-400 font-bold" id="rc_steer_angle">0°</span>
+                  </div>
+                  <div class="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
+                    <div class="h-full bg-green-500 transition-all duration-200" id="rc_steer_bar" style="width:50%">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-black/30 p-3 rounded-lg border border-white/5">
+                  <div class="flex justify-between text-xs font-mono">
+                    <span>Ultrasonic Front</span>
+                    <span class="text-orange-400 font-bold" id="rc_distance">-- cm</span>
+                  </div>
+                  <div class="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
+                    <div class="h-full bg-orange-500 transition-all duration-200" id="rc_distance_bar"
+                      style="width:100%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title mb-3">ស្ថានភាពទូទៅ (System Status)</div>
+              <div class="grid grid-cols-2 gap-2 font-mono mb-3">
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5">
+                  <div class="text-[10px] text-gray-500">ថ្ម (Battery)</div>
+                  <div class="text-xl font-bold text-green-400" id="rc_battery">8.4V</div>
+                </div>
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5">
+                  <div class="text-[10px] text-gray-500">WiFi Signal</div>
+                  <div class="text-xl font-bold text-blue-400" id="rc_wifi">-42 dBm</div>
+                </div>
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5 col-span-2">
+                  <div class="text-[10px] text-gray-500">ចម្ងាយធ្វើដំណើររួម (Distance Travelled)</div>
+                  <div class="text-xl font-bold text-purple-400" id="rc_distance_total">0.0 m</div>
+                </div>
+              </div>
+
+              <div class="pt-2 border-t border-white/5 space-y-3">
+                <div>
+                  <div class="flex justify-between text-[11px] font-mono text-gray-400 mb-1">
+                    <span>ល្បឿនកំណត់អតិបរមា (Max Throttle):</span>
+                    <span id="rcThrottleVal" class="text-blue-400">60%</span>
+                  </div>
+                  <input type="range" min="20" max="100" value="60" step="5"
+                    oninput="document.getElementById('rcThrottleVal').innerText = this.value + '%'; rcMaxThrottle = parseInt(this.value);"
+                    class="w-full accent-blue-500 bg-white/10 h-1 rounded-lg cursor-pointer">
+                </div>
+                <button onclick="resetRcCarData()"
+                  class="w-full py-1.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 font-mono text-xs rounded transition-all">
+                  🗑 កំណត់ឡើងវិញ (Reset)
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title mb-3">LOG ការបញ្ជូនទិន្នន័យ (Serial Log)</div>
+              <div id="rcLogBox"
+                class="font-mono text-[10px] h-[120px] overflow-y-auto space-y-1 text-gray-400 p-2 bg-black/30 rounded-lg">
+                <div class="text-blue-400">[SYSTEM] ចាប់ផ្ដើមប្រឡងប្រព័ន្ធ RC Car...</div>
+                <div class="text-green-400">[READY] ESP32-CAM &amp; Motor Driver Link រួចរាល់។</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="page-parking">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div class="lg:col-span-3">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">🅿️ Smart Parking & Gate Access Lab (ប្រព័ន្ធចំណតឆ្លាតវៃ)</div>
+                <div class="flex gap-2">
+                  <button id="btnToggleParking" onclick="toggleParkingSimulation()"
+                    class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-mono transition-all flex items-center gap-1">
+                    <span id="parkingBtnIcon">▶</span> <span id="parkingBtnText">ចាប់ផ្ដើម Lab</span>
+                  </button>
+                  <button onclick="spawnVehicleManually()"
+                    class="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-gray-300 rounded text-xs font-mono border border-white/10 transition-all">
+                    🚗 បញ្ចេញឡាន (Spawn)
+                  </button>
+                </div>
+              </div>
+              <p class="text-xs text-gray-400 mb-4">
+                ការប្រើប្រាស់សេនស័រ Ultrasonic វាស់ចម្ងាយរថយន្តapproach រួមផ្សំជាមួយ AI Vision (YOLO)
+                ដើម្បីពិនិត្យប្រភេទយានយន្ត និងបញ្ជា Servo Barrier Gate បើក-បិទស្វ័យប្រវត្ត។
+              </p>
+
+              <div class="cam-container" style="aspect-ratio: 16/9;">
+                <canvas id="parkingCanvas" width="800" height="450" class="w-full h-full block object-cover"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+
+            <div class="card">
+              <div class="card-title mb-4">ស្ថានភាព Hardware Telemetry</div>
+              <div class="space-y-4">
+                <div class="bg-black/30 p-3 rounded-lg border border-white/5">
+                  <div class="flex justify-between text-xs font-mono">
+                    <span>Ultrasonic HC-SR04</span>
+                    <span class="text-orange-400 font-bold" id="parking_distance">-- cm</span>
+                  </div>
+                  <div class="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
+                    <div class="h-full bg-orange-500 transition-all duration-200" id="parking_distance_bar"
+                      style="width: 100%"></div>
+                  </div>
+                </div>
+
+                <div class="bg-black/30 p-3 rounded-lg border border-white/5">
+                  <div class="flex justify-between text-xs font-mono">
+                    <span>Servo Gate Angle</span>
+                    <span class="text-green-400 font-bold" id="parking_servo_angle">0° (Closed)</span>
+                  </div>
+                  <div class="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
+                    <div class="h-full bg-green-500 transition-all duration-300" id="parking_servo_bar"
+                      style="width: 0%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title mb-3">លទ្ធផលគ្រប់គ្រងចំណត (AI Lot Tracker)</div>
+              <div class="grid grid-cols-2 gap-2 font-mono mb-3">
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5">
+                  <div class="text-[10px] text-gray-500">Lot Capacity</div>
+                  <div class="text-xl font-bold text-gray-300">6 Slots</div>
+                </div>
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5">
+                  <div class="text-[10px] text-gray-500">Available</div>
+                  <div class="text-xl font-bold text-blue-400" id="parking_available_slots">6</div>
+                </div>
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5 col-span-2">
+                  <div class="text-[10px] text-gray-500">Occupancy Rate</div>
+                  <div class="text-xl font-bold text-green-400" id="parking_occupancy_rate">0%</div>
+                </div>
+              </div>
+
+              <div class="pt-2 border-t border-white/5 space-y-3">
+                <div>
+                  <div class="flex justify-between text-[11px] font-mono text-gray-400 mb-1">
+                    <span>ល្បឿនពិសោធន៍ (Sim Speed):</span>
+                    <span id="parkingSpeedVal" class="text-blue-400">1x</span>
+                  </div>
+                  <input type="range" min="1" max="3" value="1" step="0.5"
+                    oninput="document.getElementById('parkingSpeedVal').innerText = this.value + 'x'; simSpeedSetting = parseFloat(this.value);"
+                    class="w-full accent-blue-500 bg-white/10 h-1 rounded-lg cursor-pointer">
+                </div>
+                <button onclick="resetParkingLotData()"
+                  class="w-full py-1.5 bg-red-600/10 hover:bg-red-600/20 text-red-400 font-mono text-xs rounded transition-all">
+                  🗑 សម្អាតចំណតឡើងវិញ
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="page active" id="page-guide">
+        <section class="guide-page" id="project-guide">
+          <header class="guide-hero">
+            <div class="guide-hero-copy">
+              <span class="eyebrow">Smart City Project Guide</span>
+              <h1>គម្រោងទីក្រុងឆ្លាតវៃ</h1>
+              <p>
+                ប្រព័ន្ធនេះបង្ហាញពីរបៀបបង្កើត Smart City Dashboard ដែលភ្ជាប់កាមេរ៉ា IoT Sensor
+                និង Backend API ដើម្បីតាមដានសុវត្ថិភាព ចរាចរណ៍ បរិស្ថាន និងសេវាសាធារណៈក្នុងពេលជាក់ស្តែង។
+              </p>
+            </div>
+            <div class="guide-status-grid">
+              <div class="status-tile">
+                <strong>24/7</strong>
+                <span>City Monitoring</span>
+              </div>
+              <div class="status-tile">
+                <strong>4</strong>
+                <span>Core Modules</span>
+              </div>
+              <div class="status-tile">
+                <strong>API</strong>
+                <span>Live Data Layer</span>
+              </div>
+            </div>
+          </header>
+
+          <div class="guide-slides">
+            <div class="slide-toolbar">
+              <span>Smart City Overview</span>
+              <div class="slide-dots">
+                <button onclick="goSlide(0)" id="slideDot0" aria-label="Show city overview"></button>
+                <button onclick="goSlide(1)" id="slideDot1" aria-label="Show system architecture"></button>
+              </div>
+              <div class="slide-actions">
+                <button onclick="goSlide(currentSlide-1)" aria-label="Previous slide">◀</button>
+                <button onclick="goSlide(currentSlide+1)" aria-label="Next slide">▶</button>
+              </div>
+            </div>
+
+            <div class="slide-frame">
+              <article class="slide-panel city-slide" id="slide-0">
+                <div class="slide-copy">
+                  <span class="slide-kicker">Slide 01 · City Problem</span>
+                  <h2>បញ្ហាទីក្រុងដែលត្រូវគ្រប់គ្រង</h2>
+                  <p>
+                    Smart City ត្រូវការប្រព័ន្ធដែលអាចមើលទិន្នន័យពីកាមេរ៉ា សេនស័រខ្យល់ ភ្លើងចរាចរណ៍
+                    និងបណ្តាញសាធារណៈក្នុងផ្ទាំងតែមួយ ដើម្បីឱ្យអ្នកគ្រប់គ្រងសម្រេចចិត្តបានលឿន។
+                  </p>
+                  <div class="metric-row">
+                    <div><strong>Traffic</strong><span>កកស្ទះ និងការពន្យារពេល</span></div>
+                    <div><strong>Safety</strong><span>កាមេរ៉ា និងការជូនដំណឹង</span></div>
+                    <div><strong>Environment</strong><span>ខ្យល់ សំឡេង និងសីតុណ្ហភាព</span></div>
+                  </div>
+                </div>
+                <aside class="slide-note">
+                  <h3>Use Cases</h3>
+                  <p>ការតាមដានចរាចរណ៍ ការរាយការណ៍ហេតុការណ៍ ការវាស់គុណភាពខ្យល់ និងការបង្ហាញទិន្នន័យសម្រាប់មន្ត្រីក្រុង។
+                  </p>
+                </aside>
+              </article>
+
+              <article class="slide-panel architecture-slide" id="slide-1">
+                <div class="slide-copy">
+                  <span class="slide-kicker">Slide 02 · System Flow</span>
+                  <h2>ស្ថាបត្យកម្មប្រព័ន្ធ Smart City</h2>
+                  <p>
+                    Frontend បង្ហាញ Dashboard និងការគ្រប់គ្រង។ Backend ទទួលទិន្នន័យពីកាមេរ៉ា និង Sensor
+                    រួចផ្តល់ API សម្រាប់ live stream ស្ថិតិ និងការជូនដំណឹង។
+                  </p>
+                  <div class="architecture-flow">
+                    <div>Camera<br><span>Vision Feed</span></div>
+                    <b>→</b>
+                    <div>Backend<br><span>FastAPI</span></div>
+                    <b>→</b>
+                    <div>Dashboard<br><span>Frontend</span></div>
+                    <b>→</b>
+                    <div>Operator<br><span>Action</span></div>
+                  </div>
+                </div>
+                <aside class="slide-note">
+                  <h3>Deployment</h3>
+                  <p>Raspberry Pi ឬ Server តូចអាចដំណើរការ API, Camera Stream និងផ្ទាំងគ្រប់គ្រងសម្រាប់បណ្តាញក្នុងសាលា
+                    ឬមន្ទីរក្រុង។</p>
+                </aside>
+              </article>
+            </div>
+          </div>
+
+          <div class="guide-grid">
+            <article class="guide-card">
+              <span class="card-index">01</span>
+              <h3>និយមន័យគម្រោង</h3>
+              <p>
+                គម្រោង Smart City គឺជាប្រព័ន្ធសាកល្បងសម្រាប់ប្រមូលទិន្នន័យទីក្រុងពីឧបករណ៍ IoT កាមេរ៉ា
+                និង API មកបង្ហាញជាផ្ទាំងត្រួតពិនិត្យដែលអាចប្រើបានក្នុងថ្នាក់រៀន ឬការបង្ហាញគម្រោង។
+              </p>
+            </article>
+
+            <article class="guide-card">
+              <span class="card-index">02</span>
+              <h3>គោលបំណងចម្បង</h3>
+              <ul>
+                <li>បង្កើត Dashboard សម្រាប់តាមដានចរាចរណ៍ សុវត្ថិភាព និងបរិស្ថាន។</li>
+                <li>បំបែក Frontend និង Backend ឱ្យងាយថែទាំ និងពង្រីក។</li>
+                <li>បង្ហាញ live camera stream និង API stats ក្នុង UI តែមួយ។</li>
+              </ul>
+            </article>
+
+            <article class="guide-card guide-card-wide">
+              <span class="card-index">03</span>
+              <h3>Project Architecture</h3>
+              <div class="folder-map">
+                <div>
+                  <strong>frontend/</strong>
+                  <span>index.html, style.css, script.js</span>
+                </div>
+                <div>
+                  <strong>backend/</strong>
+                  <span>app.py, API routes, video stream</span>
+                </div>
+                <div>
+                  <strong>backend/models/</strong>
+                  <span>YOLO model files</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="guide-card guide-card-wide">
+              <span class="card-index">04</span>
+              <h3>Implementation Roadmap</h3>
+              <div class="roadmap">
+                <div><strong>Step 1</strong><span>រៀបចំកាមេរ៉ា និង IoT Sensor feed</span></div>
+                <div><strong>Step 2</strong><span>ភ្ជាប់ FastAPI endpoints សម្រាប់ stream និង stats</span></div>
+                <div><strong>Step 3</strong><span>បង្ហាញ Dashboard, charts, alerts និង logs</span></div>
+                <div><strong>Step 4</strong><span>ដាក់ដំណើរការលើ Raspberry Pi ឬ local server</span></div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+
+      <div class="page" id="page-detect">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div class="lg:col-span-3">
+            <div class="cam-container">
+              <img id="videoStream" style="width:100%;height:100%;object-fit:cover;display:block;"
+                alt="YOLOv8 Live Video Feed">
+              <canvas id="detectCanvas" width="800" height="450" style="display:none;"></canvas>
+              <div class="hud-overlay">
+                <div class="hud-top">
+                  <div class="hud-badge">MODE: INFERENCE_SIM</div>
+                  <div class="hud-badge" id="fpsDisplay">FPS: 45.0</div>
+                </div>
+                <div class="flex justify-between items-end">
+                  <div class="text-[10px] font-mono text-white/40">YOLOv8n · 800x450 · Inference Engine</div>
+                  <div class="hud-badge" style="color:var(--blue)">LIVE FEED</div>
+                </div>
+              </div>
+              <div
+                class="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-blue-500/10 to-transparent h-1 w-full animate-[scan_3s_linear_infinite]"
+                id="scanLine" style="display:none;"></div>
+            </div>
+
+            <div class="mt-4 flex flex-wrap gap-4 items-center justify-between">
+              <div class="flex gap-2">
+                <button id="btnToggle" onclick="toggleInference()"
+                  class="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white font-mono text-sm rounded-lg transition-all flex items-center gap-2">
+                  <span id="btnIcon">▶</span> <span id="btnText">ចាប់ផ្ដើម Detect</span>
+                </button <button onclick="resetDetectionStats()"
+                  class="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 font-mono text-sm rounded-lg transition-all">
+                ↺ សូន្យឡើងវិញ
+                </button>
+              </div>
+              <div class="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
+                <span class="text-xs font-mono text-gray-400">Confidence Threshold:</span>
+                <input type="range" min="30" max="95" value="50"
+                  oninput="confThreshold = this.value/100; document.getElementById('confVal').innerText = this.value + '%'"
+                  class="w-24 accent-blue-500">
+                <span id="confVal" class="text-xs font-mono text-blue-400 w-8">50%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div id="backendApiPanel" data-component="./partials/backend-api-panel.html"></div>
+            <div class="card">
+              <div class="card-title mb-4">ស្ថិតិការចាប់បាន (Live Statistics)</div>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="bg-black/20 p-3 rounded-lg border border-white/5">
+                  <div class="text-[10px] text-gray-500 mb-1">ចេក (BANANA)</div>
+                  <div class="text-2xl font-bold text-[#f5c842]" id="countBanana">0</div>
+                </div>
+                <div class="bg-black/20 p-3 rounded-lg border border-white/5">
+                  <div class="text-[10px] text-gray-500 mb-1">ប៉ោម (APPLE)</div>
+                  <div class="text-2xl font-bold text-[#e84c4c]" id="countApple">0</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card flex-1">
+              <div class="card-title mb-4">LOG ការវិភាគបច្ចុប្បន្ន</div>
+              <div id="logBox"
+                class="font-mono text-[10px] h-[220px] overflow-y-auto space-y-1 text-gray-400 p-2 bg-black/30 rounded-lg">
+                <div class="text-blue-400">[SYSTEM] ចាប់ផ្ដើមប្រឡងប្រព័ន្ធ...</div>
+                <div class="text-green-400">[READY] ម៉ូដែល YOLOv8 រួចរាល់សម្រាប់ការវិភាគ។</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="page" id="page-collect">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2">
+            <div class="cam-container">
+              <canvas id="collectCanvas" width="800" height="450"></canvas>
+              <div class="hud-overlay">
+                <div class="hud-top">
+                  <div class="hud-badge" style="color:var(--orange); border-color:var(--orange)">STUDIO MODE: COLLECT
+                  </div>
+                </div>
+                <div class="text-[10px] font-mono text-white/40">ALIGN FRUIT IN CENTER BOUNDING BOX</div>
+              </div>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-3">
+              <select id="collectLabel"
+                class="px-4 py-2 bg-white/10 text-white rounded-lg border border-white/10 text-sm font-mono focus:outline-none">
+                <option value="banana">🍌 ចេក (Banana)</option>
+                <option value="apple">🍎 ប៉ោម (Apple)</option>
+              </select>
+              <button onclick="captureDataImage()"
+                class="px-6 py-2 bg-[#f0883e] hover:bg-orange-500 text-white font-mono text-sm rounded-lg transition-all">
+                📸 ថតរក្សាទុក (Capture)
+              </button>
+              <button onclick="clearDataset()"
+                class="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 font-mono text-sm rounded-lg transition-all">
+                🗑 សម្អាតទាំងអស់
+              </button>
+            </div>
+          </div>
+          <div class="space-y-4">
+            <div class="card">
+              <div class="card-title mb-4">ស្ថិតិសរុប (Dataset Summary)</div>
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-black/20 p-3 rounded-lg border border-white/5">
+                  <div class="text-[10px] text-gray-500">ចេក (Captured)</div>
+                  <div class="text-xl font-bold" id="dsBanCount">0</div>
+                </div>
+                <div class="bg-black/20 p-3 rounded-lg border border-white/5">
+                  <div class="text-[10px] text-gray-500">ប៉ោម (Captured)</div>
+                  <div class="text-xl font-bold" id="dsAppCount">0</div>
+                </div>
+              </div>
+              <div class="text-xs text-gray-400 leading-relaxed font-light">
+                <strong class="text-blue-400">YOLO Label Format:</strong><br>
+                <code class="block bg-black/40 p-2 rounded mt-1 font-mono text-[10px] text-gray-300">
+                &lt;class_id&gt; &lt;x_center&gt; &lt;y_center&gt; &lt;width&gt; &lt;height&gt;
+              </code>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title mb-3">រូបភាពដែលបានថត (Gallery)</div>
+              <div id="captureGallery" class="grid grid-cols-3 gap-2 max-h-[200px] overflow-y-auto">
+                <div class="text-[10px] text-gray-500 text-center col-span-3 py-6">គ្មានរូបភាពនៅឡើយទេ</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="page" id="page-augment">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Data Augmentation Simulation (ការបន្ថែមទិន្នន័យសិប្បនិម្មិត)</div>
+            <div class="flex gap-2">
+              <select id="augFruitSelect" onchange="initAug()"
+                class="px-3 py-1 bg-white/5 border border-white/10 rounded text-xs font-mono">
+                <option value="banana">🍌 Banana</option>
+                <option value="apple">🍎 Apple</option>
+              </select>
+              <button onclick="applyAllAugments()" class="px-3 py-1 bg-blue-600 text-white rounded text-xs">✨ Apply
+                All</button>
+              <button onclick="resetAugments()" class="px-3 py-1 bg-white/10 text-gray-300 rounded text-xs">↺
+                Reset</button>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mb-4">ការផ្លាស់ប្តូររូបភាពដើម ដើម្បីបង្កើនប្រសិទ្ធភាពហ្វឹកហាត់របស់ម៉ូដែល AI
+            ឱ្យធន់នឹងលក្ខខណ្ឌបរិស្ថានផ្សេងៗ។</p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="augGrid">
+
+          </div>
+        </div>
+      </div>
+
+
+      <div class="page" id="page-confusion">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"> Confusion Matrix Evaluation (ម៉ាទ្រីសច្រឡំ)</div>
+              </div>
+              <p class="text-xs text-gray-400 mb-6">ម៉ាទ្រីសវាស់ស្ទង់សមត្ថភាពម៉ូដែលរវាងលទ្ធផលជាក់ស្ដែង (Actual)
+                និងការទស្សន៍ទាយ (Predicted)។</p>
+
+              <div class="grid grid-cols-3 gap-4 items-center">
+                <div></div>
+                <div class="text-center font-mono text-xs text-gray-400">Pred: BANANA</div>
+                <div class="text-center font-mono text-xs text-gray-400">Pred: APPLE</div>
+
+                <div class="text-right font-mono text-xs text-gray-400 pr-2">Actual:<br>BANANA</div>
+                <div class="cm-cell cm-tp">
+                  <div class="text-2xl font-bold text-green-400" id="cm-tp-val">82</div>
+                  <div class="text-[9px] text-gray-400 mt-1">True Positive (TP)</div>
+                  <div class="text-[8px] text-green-500/80">ចេក → ចេក (ត្រូវ)</div>
+                </div>
+                <div class="cm-cell cm-fn">
+                  <div class="text-2xl font-bold text-orange-400" id="cm-fn-val">8</div>
+                  <div class="text-[9px] text-gray-400 mt-1">False Negative (FN)</div>
+                  <div class="text-[8px] text-orange-500/80">ចេក → ប៉ោម (ខុស)</div>
+                </div>
+
+                <div class="text-right font-mono text-xs text-gray-400 pr-2">Actual:<br>APPLE</div>
+                <div class="cm-cell cm-fp">
+                  <div class="text-2xl font-bold text-red-400" id="cm-fp-val">6</div>
+                  <div class="text-[9px] text-gray-400 mt-1">False Positive (FP)</div>
+                  <div class="text-[8px] text-red-500/80">ប៉ោម → ចេក (ខុស)</div>
+                </div>
+                <div class="cm-cell cm-tn">
+                  <div class="text-2xl font-bold text-green-400" id="cm-tn-val">84</div>
+                  <div class="text-[9px] text-gray-400 mt-1">True Negative (TN)</div>
+                  <div class="text-[8px] text-green-500/80">ប៉ោម → ប៉ោម (ត្រូវ)</div>
+                </div>
+              </div>
+
+              <div class="mt-6 flex flex-wrap gap-4 p-4 bg-white/5 rounded-lg border border-white/5 items-center">
+                <div class="flex-1 min-w-[200px]">
+                  <label class="block text-xs text-gray-400 mb-2 font-mono">លៃតម្រូវ Confidence Threshold:</label>
+                  <input type="range" id="cmThreshold" min="20" max="95" value="70"
+                    oninput="updateConfusionMatrixLogic()" class="w-full accent-blue-500">
+                </div>
+                <div class="text-right">
+                  <div class="text-xs text-gray-500">កម្រិតលៃតម្រូវបច្ចុប្បន្ន</div>
+                  <div class="text-lg font-mono text-blue-400 font-bold" id="cmThresholdVal">70%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="card">
+              <div class="card-title mb-4">លទ្ធផលគណនា (Performance Scores)</div>
+              <div class="space-y-3">
+                <div>
+                  <div class="flex justify-between text-xs font-mono mb-1">
+                    <span>Accuracy (ភាពត្រឹមត្រូវរួម)</span>
+                    <span class="text-green-400" id="mAcc">91.1%</span>
+                  </div>
+                  <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div class="h-full bg-green-500 transition-all duration-300" id="barAcc" style="width: 91.1%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs font-mono mb-1">
+                    <span>Precision (ភាពច្បាស់លាស់)</span>
+                    <span class="text-blue-400" id="mPrec">93.1%</span>
+                  </div>
+                  <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div class="h-full bg-blue-500 transition-all duration-300" id="barPrec" style="width: 93.1%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs font-mono mb-1">
+                    <span>Recall (កម្រិតរំលឹកឡើងវិញ)</span>
+                    <span class="text-purple-400" id="mRec">91.1%</span>
+                  </div>
+                  <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div class="h-full bg-purple-500 transition-all duration-300" id="barRec" style="width: 91.1%">
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs font-mono mb-1">
+                    <span>F1 Score (ពិន្ទុរួម F1)</span>
+                    <span class="text-orange-400" id="mF1">92.1%</span>
+                  </div>
+                  <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div class="h-full bg-orange-500 transition-all duration-300" id="barF1" style="width: 92.1%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title mb-2">រូបមន្តគណនា</div>
+              <div class="font-mono text-[9px] text-gray-500 space-y-1">
+                <div>• Accuracy = (TP + TN) / Total</div>
+                <div>• Precision = TP / (TP + FP)</div>
+                <div>• Recall = TP / (TP + FN)</div>
+                <div>• F1 = 2 * (P * R) / (P + R)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="page" id="page-models">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Model Comparison (ប្រៀបធៀបម៉ូដែល YOLOv8 & v11)</div>
+          </div>
+          <p class="text-xs text-gray-400 mb-6">ការប្រៀបធៀបរវាងល្បឿន Inference Speed (FPS) ធៀបនឹងកម្រិតភាពត្រឹមត្រូវ
+            mAP@50 នៅលើ Edge Devices ដូចជា Raspberry Pi 4។</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-black/30 p-4 rounded-lg border border-white/5">
+              <div class="font-bold text-sm text-green-400">YOLOv8-Nano</div>
+              <div class="text-2xl font-bold font-mono mt-2">45 FPS</div>
+              <div class="text-xs text-gray-500">mAP@50: 88.5%</div>
+              <div class="text-[10px] font-mono text-gray-600 mt-1">Size: 3.2MB · Params: 3.2M</div>
+            </div>
+            <div class="bg-black/30 p-4 rounded-lg border border-white/5 border-blue-500/30">
+              <div class="font-bold text-sm text-blue-400">YOLOv8-Small</div>
+              <div class="text-2xl font-bold font-mono mt-2">32 FPS</div>
+              <div class="text-xs text-gray-500">mAP@50: 92.1%</div>
+              <div class="text-[10px] font-mono text-gray-600 mt-1">Size: 11.2MB · Params: 11.2M</div>
+            </div>
+            <div class="bg-black/30 p-4 rounded-lg border border-white/5">
+              <div class="font-bold text-sm text-orange-400">YOLOv8-Medium</div>
+              <div class="text-2xl font-bold font-mono mt-2">20 FPS</div>
+              <div class="text-xs text-gray-500">mAP@50: 95.3%</div>
+              <div class="text-[10px] font-mono text-gray-600 mt-1">Size: 25.8MB · Params: 25.9M</div>
+            </div>
+            <div class="bg-black/30 p-4 rounded-lg border border-white/5">
+              <div class="font-bold text-sm text-purple-400">YOLOv11-Nano</div>
+              <div class="text-2xl font-bold font-mono mt-2">25 FPS</div>
+              <div class="text-xs text-gray-500">mAP@50: 97.2%</div>
+              <div class="text-[10px] font-mono text-gray-600 mt-1">Size: 5.4MB · Params: 2.6M</div>
+            </div>
+          </div>
+
+          <div class="h-[250px] bg-black/40 p-4 rounded-lg border border-white/10 relative">
+            <canvas id="tradeoffChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="page" id="page-training">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Training Progress (ការវិវត្តនៃការហ្វឹកហាត់)</div>
+            <div class="flex gap-2 items-center">
+              <button id="btnTrain" onclick="toggleTraining()"
+                class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-mono">▶ ចាប់ផ្ដើម
+                Train</button>
+              <button onclick="resetTraining()"
+                class="px-3 py-1.5 bg-white/10 text-gray-300 rounded text-xs font-mono">↺ Reset</button>
+              <span class="text-xs font-mono text-gray-400 ml-4">Epoch: <span id="currentEpoch"
+                  class="text-blue-400">0</span>/50</span>
+            </div>
+          </div>
+          <div class="w-full bg-white/5 h-2 rounded-full mb-6 overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-300"
+              id="trainingProgress" style="width: 0%"></div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-black/30 p-4 rounded-lg border border-white/5">
+              <div class="text-xs text-gray-400 mb-2 font-mono">Loss Metrics (កាន់តែទាបកាន់តែល្អ)</div>
+              <canvas id="lossChart" class="h-[180px] w-full"></canvas>
+            </div>
+            <div class="bg-black/30 p-4 rounded-lg border border-white/5">
+              <div class="text-xs text-gray-400 mb-2 font-mono">mAP & Precision Metrics (កាន់តែខ្ពស់កាន់តែល្អ)</div>
+              <canvas id="accuracyChart" class="h-[180px] w-full"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="page" id="page-gradcam">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Grad-CAM Feature Activation (ផែនទីកម្ដៅសម្រេចចិត្តរបស់ AI)</div>
+              </div>
+              <p class="text-xs text-gray-400 mb-4">បង្ហាញតំបន់ចក្ខុវិញ្ញាណដែលម៉ូដែល YOLOv8
+                ផ្ដោតយកចិត្តទុកដាក់បំផុតដើម្បីកំណត់អត្តសញ្ញាណផ្លែឈើ។</p>
+              <div class="cam-container">
+                <canvas id="gradCamCanvas" width="800" height="450"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="space-y-4">
+            <div class="card">
+              <div class="card-title mb-4">ជម្រើសផ្លែឈើ</div>
+              <div class="flex gap-2">
+                <button onclick="showGradCam('banana')" id="gcBtnBanana"
+                  class="flex-1 py-2 bg-blue-600 text-white rounded text-xs font-mono">🍌 Banana</button>
+                <button onclick="showGradCam('apple')" id="gcBtnApple"
+                  class="flex-1 py-2 bg-white/10 text-gray-400 rounded text-xs font-mono">🍎 Apple</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title mb-3">របាយការណ៍បច្ចេកទេស (Features Weight)</div>
+              <div class="space-y-4 text-xs font-mono" id="gcFeatureResults">
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="page" id="page-robot">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Trash Sorting Simulator Lab (ប្រព័ន្ធបែងចែកសំរាមស្វ័យប្រវត្ត)</div>
+                <button id="btnToggleRobot" onclick="toggleRobotSorting()"
+                  class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-mono">▶
+                  ចាប់ផ្ដើម Lab</button>
+              </div>
+              <p class="text-xs text-gray-400 mb-4">កាមេរ៉ាពិនិត្យសំរាមនៅលើខ្សែក្រវ៉ាត់ រួចបញ្ជា Servo Gate
+                ឱ្យបែងចែកដបប្លាស្ទិក និងកំប៉ុងចូលធុងត្រឹមត្រូវដោយគ្មានការច្រឡំ។</p>
+              <div class="cam-container" style="aspect-ratio: 21/9;">
+                <canvas id="robotCanvas" width="1000" height="428"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="space-y-4">
+            <div class="card">
+              <div class="card-title mb-4">ស្ថានភាព Servo Gate</div>
+              <div class="space-y-4">
+                <div class="bg-black/30 p-3 rounded-lg border border-white/5">
+                  <div class="flex justify-between text-xs font-mono">
+                    <span>Gate A (Plastic)</span>
+                    <span class="text-[#2f81f7]" id="servoA_angle">0° (Standby)</span>
+                  </div>
+                  <div class="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
+                    <div class="h-full bg-[#2f81f7] transition-all" id="servoA_bar" style="width: 0%"></div>
+                  </div>
+                </div>
+                <div class="bg-black/30 p-3 rounded-lg border border-white/5">
+                  <div class="flex justify-between text-xs font-mono">
+                    <span>Gate B (Cans)</span>
+                    <span class="text-[#f0883e]" id="servoB_angle">0° (Standby)</span>
+                  </div>
+                  <div class="w-full bg-white/5 h-1.5 rounded-full mt-2 overflow-hidden">
+                    <div class="h-full bg-[#f0883e] transition-all" id="servoB_bar" style="width: 0%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title mb-3">លទ្ធផលបែងចែកសំរាម</div>
+              <div class="grid grid-cols-2 gap-2 font-mono">
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5">
+                  <div class="text-[10px] text-gray-500">Plastic Sorted</div>
+                  <div class="text-xl font-bold text-[#2f81f7]" id="robotPlasticSorted">0</div>
+                </div>
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5">
+                  <div class="text-[10px] text-gray-500">Cans Sorted</div>
+                  <div class="text-xl font-bold text-[#f0883e]" id="robotCanSorted">0</div>
+                </div>
+                <div class="bg-black/30 p-3 rounded text-center border border-white/5 col-span-2">
+                  <div class="text-[10px] text-gray-500">Sorting Accuracy</div>
+                  <div class="text-xl font-bold text-green-400" id="robotAccuracy">100%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="page" id="page-smartcity">
+        <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
+          <div class="card xl:col-span-3">
+            <div class="card-header">
+              <div class="card-title">Smart City Operations Simulator (ប្រព័ន្ធគ្រប់គ្រងទីក្រុងឆ្លាតវៃ)</div>
+              <span class="px-2 py-1 bg-green-500/20 text-green-500 text-[10px] rounded">ACTIVE</span>
+            </div>
+            <p class="text-sm text-gray-400 mb-6 font-light">ផ្ទាំងនេះសម្រាប់សាកល្បងការតាមដានចរាចរណ៍ គុណភាពខ្យល់
+              ភ្លើងផ្លូវ និងសញ្ញាហេតុការណ៍ក្នុងទីក្រុងតែមួយ។</p>
+            <div class="cam-container" style="aspect-ratio: 21/9;">
+              <canvas id="cityCanvas" width="1000" height="400"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title mb-4">City Control Status</div>
+            <div class="space-y-4 text-sm">
+              <div class="flex items-center justify-between"><span class="text-gray-400">Traffic signals</span><strong
+                  class="text-green-500">Synced</strong></div>
+              <div class="flex items-center justify-between"><span class="text-gray-400">Camera nodes</span><strong
+                  class="text-blue-500">16 online</strong></div>
+              <div class="flex items-center justify-between"><span class="text-gray-400">Alerts</span><strong
+                  class="text-orange-500">2 review</strong></div>
+              <div class="flex items-center justify-between"><span class="text-gray-400">Response mode</span><strong
+                  class="text-purple-400">Auto</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div class="card">
+            <div class="card-title mb-3">Traffic Flow</div>
+            <div class="text-3xl font-bold text-green-500">87%</div>
+            <div class="text-[11px] text-gray-500 mt-1">Roads running smoothly</div>
+          </div>
+          <div class="card">
+            <div class="card-title mb-3">Air Quality</div>
+            <div class="text-3xl font-bold text-blue-500">42 AQI</div>
+            <div class="text-[11px] text-gray-500 mt-1">Healthy urban air</div>
+          </div>
+          <div class="card">
+            <div class="card-title mb-3">Public Lighting</div>
+            <div class="text-3xl font-bold text-orange-500">96%</div>
+            <div class="text-[11px] text-gray-500 mt-1">Streetlights online</div>
+          </div>
+          <div class="card">
+            <div class="card-title mb-3">Emergency Score</div>
+            <div class="text-3xl font-bold text-purple-400">A-</div>
+            <div class="text-[11px] text-gray-500 mt-1">Fast response readiness</div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="page" id="page-edge">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Raspberry Pi 4 - Edge AI Hardware Statistics</div>
+          </div>
+          <p class="text-xs text-gray-400 mb-6">ការតាមដានរាល់សកម្មភាព Hardware, CPU, Temperature ក្នុងអំឡុងពេលដែល AI
+            ដំណើរការ (Real-time Inference)។</p>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-black/40 p-4 rounded-lg border border-white/5 text-center">
+              <div class="text-xs text-gray-500">CPU Usage</div>
+              <div class="text-3xl font-bold font-mono text-blue-400 mt-1" id="edgeCPU">45%</div>
+              <div class="w-full bg-white/5 h-1 rounded-full mt-3 overflow-hidden">
+                <div class="bg-blue-500 h-full" id="edgeCPU_bar" style="width: 45%"></div>
+              </div>
+            </div>
+            <div class="bg-black/40 p-4 rounded-lg border border-white/5 text-center">
+              <div class="text-xs text-gray-500">Temperature</div>
+              <div class="text-3xl font-bold font-mono text-orange-400 mt-1" id="edgeTemp">52.4°C</div>
+              <div class="w-full bg-white/5 h-1 rounded-full mt-3 overflow-hidden">
+                <div class="bg-orange-500 h-full" id="edgeTemp_bar" style="width: 52%"></div>
+              </div>
+            </div>
+            <div class="bg-black/40 p-4 rounded-lg border border-white/5 text-center">
+              <div class="text-xs text-gray-500">RAM Usage</div>
+              <div class="text-3xl font-bold font-mono text-purple-400 mt-1" id="edgeRAM">2.1 GB</div>
+              <div class="w-full bg-white/5 h-1 rounded-full mt-3 overflow-hidden">
+                <div class="bg-purple-500 h-full" id="edgeRAM_bar" style="width: 50%"></div>
+              </div>
+            </div>
+            <div class="bg-black/40 p-4 rounded-lg border border-white/5 text-center">
+              <div class="text-xs text-gray-500">Power Draw</div>
+              <div class="text-3xl font-bold font-mono text-green-400 mt-1" id="edgePower">3.8W</div>
+              <div class="w-full bg-white/5 h-1 rounded-full mt-3 overflow-hidden">
+                <div class="bg-green-500 h-full" id="edgePower_bar" style="width: 60%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-black/30 p-4 rounded-lg border border-white/5">
+            <div class="text-xs text-gray-400 mb-2 font-mono">Inference Latency Profile (Milliseconds)</div>
+            <div class="h-[150px] relative">
+              <canvas id="latencyChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="page-iot">
+        <div class="card bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-xl p-6 shadow-2xl">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+            <div>
+              <div
+                class="text-xl font-bold bg-gradient-to-r from-teal-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent font-sans">
+                🚀 FastAPI Async MQTT Pipeline Simulator
+              </div>
+              <p class="text-xs text-slate-400 mt-1 font-mono">
+                Architecture: [Edge Devices] -> [MQTT Broker] -> [FastAPI Async Background Workers] -> [Live Dashboard]
+              </p>
+            </div>
+
+            <div class="flex gap-2 w-full md:w-auto">
+              <button id="btnToggleFastApiSim" onclick="toggleFastApiSimulation()"
+                class="flex-1 md:flex-none px-4 py-2 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-white text-xs font-bold font-mono rounded-lg shadow-lg shadow-cyan-500/20 transition-all duration-300 transform hover:-translate-y-0.5">
+                ⚡ ចាប់ផ្ដើម Async Stream
+              </button>
+              <button onclick="burstMultiPublish()"
+                class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs font-bold font-mono rounded-lg border border-slate-700 transition-all">
+                💥 Burst Publish (ច្រើនឧបករណ៍)
+              </button>
+            </div>
+          </div>
+
+          <div class="relative rounded-xl overflow-hidden border border-slate-800/80 shadow-inner bg-[#050b14]">
+            <canvas id="fastApiCanvas" width="950" height="400" class="w-full h-full block"></canvas>
+
+            <div
+              class="absolute top-4 right-4 bg-slate-950/80 backdrop-blur-md border border-cyan-500/30 px-3 py-1.5 rounded-md font-mono text-[11px] text-cyan-400 flex items-center gap-2">
+              <span class="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
+              Active Tasks: <span id="active-tasks-counter" class="font-bold text-white">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="page-chatbot">
+        <div class="card" style="max-width:760px;margin:0 auto;">
+          <div class="card-header">
+            <div class="card-title">🤖 Chatbot Assistant — Smart City Cambodia</div>
+            <div
+              style="display:flex;align-items:center;gap:6px;font-size:10px;font-family:var(--mono);color:var(--green);">
+              <span
+                style="width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;"></span>ONLINE
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mb-4">សួរអ្វីក៏បានអំពី IoT, YOLOv8, ESP32, MQTT, Raspberry Pi, Dashboard
+            និង Smart City ជាភាសាខ្មែរ ឬ English។</p>
+
+
+          <div id="chatMessages" style="
+          height:360px;overflow-y:auto;background:rgba(0,0,0,0.3);
+          border:1px solid var(--border);border-radius:10px;
+          padding:16px;display:flex;flex-direction:column;gap:10px;
+          font-size:12px;margin-bottom:12px;
+        ">
+
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <div
+                style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">
+                🤖</div>
+              <div
+                style="background:var(--s3);border:1px solid var(--border);border-radius:10px 10px 10px 2px;padding:10px 14px;color:var(--text);max-width:80%;line-height:1.6;">
+                សួស្ដី! ខ្ញុំជា Assistant របស់ <strong style="color:var(--blue);">SmartCity Pro</strong>។<br>
+                សួរខ្ញុំអំពី:<br>
+                <span style="color:var(--green);">• YOLOv8 & Computer Vision</span><br>
+                <span style="color:var(--blue);">• ESP32 & MQTT IoT</span><br>
+                <span style="color:var(--purple);">• Raspberry Pi & Edge Server</span><br>
+                <span style="color:var(--orange);">• Smart City Cambodia</span>
+              </div>
+            </div>
+          </div>
+
+
+          <div style="display:flex;gap:8px;">
+            <input id="chatInput" type="text" placeholder="វាយសំណួររបស់អ្នក... (ខ្មែរ ឬ English)"
+              onkeydown="if(event.key==='Enter')sendChat()" style="
+              flex:1;background:var(--s2);border:1px solid var(--border);
+              border-radius:8px;padding:10px 14px;color:var(--text);
+              font-size:13px;font-family:var(--sans);outline:none;
+              transition:border-color 0.2s;
+            " onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'" />
+            <button onclick="sendChat()" id="chatSendBtn" style="
+            background:var(--blue);color:#fff;border:none;
+            border-radius:8px;padding:10px 20px;cursor:pointer;
+            font-family:var(--mono);font-size:12px;transition:0.2s;
+            white-space:nowrap;
+          " onmouseover="this.style.background='#4d94ff'" onmouseout="this.style.background='var(--blue)'">
+              ផ្ញើ ▶
+            </button>
+          </div>
+
+
+          <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">
+            <span style="font-size:10px;color:var(--dim);font-family:var(--mono);align-self:center;">សួរលឿន:</span>
+            <button onclick="quickChat('YOLOv8 ដំណើរការដូចម្ដេច?')" class="chip-btn">YOLOv8 ដំណើរការ?</button>
+            <button onclick="quickChat('MQTT vs HTTP មានភាពខុសគ្នាដូចម្ដេច?')" class="chip-btn">MQTT vs HTTP?</button>
+            <button onclick="quickChat('ESP32 ជាអ្វី? ហើយប្រើក្នុង Smart City ដូចម្ដេច?')" class="chip-btn">ESP32
+              ជាអ្វី?</button>
+            <button onclick="quickChat('Smart City dashboard ត្រូវមាន module អ្វីខ្លះ?')" class="chip-btn">Smart City
+              Modules</button>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="page" id="page-drone">
+        <div class="card" style="padding:0;overflow:hidden;height:calc(100vh - 110px);">
+          <iframe title="Drone Learning Platform" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;km&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;Drone Learning Platform v1.0 — RUPP B402&lt;/title&gt;
+
+&lt;!-- Tailwind CSS for Modern Premium UI --&gt;
+&lt;script src=&quot;https://cdn.tailwindcss.com&quot;&gt;&lt;/script&gt;
+
+&lt;!-- Font Awesome 6 for modern Icons --&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css&quot;&gt;
+
+&lt;!-- Three.js for 3D Simulation --&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js&quot;&gt;&lt;/script&gt;
+
+&lt;!-- Chart.js for PID Live Plotting --&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js&quot;&gt;&lt;/script&gt;
+
+&lt;!-- Google Fonts: Kantumruy Pro for Khmer &amp; Inter for English --&gt;
+&lt;link href=&quot;https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Kantumruy+Pro:wght@300;400;500;600;700&amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+
+&lt;script&gt;
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: [&#x27;Kantumruy Pro&#x27;, &#x27;Inter&#x27;, &#x27;sans-serif&#x27;],
+        }
+      }
+    }
+  }
+&lt;/script&gt;
+
+&lt;style&gt;
+  /* Custom Scrollbar for sleek UI */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0f172a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+  }
+  
+  /* Glassmorphism styling */
+  .glass-card {
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body class=&quot;bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-slate-950&quot;&gt;
+
+  &lt;!-- TOP HEADER BAR --&gt;
+  &lt;header class=&quot;glass-card sticky top-0 z-40 px-6 py-4 flex flex-wrap items-center justify-between gap-4 shadow-lg border-b border-slate-800&quot;&gt;
+    &lt;div class=&quot;flex items-center gap-3&quot;&gt;
+      &lt;div class=&quot;bg-cyan-500/20 p-2.5 rounded-xl border border-cyan-400/30 shadow-inner&quot;&gt;
+        &lt;i class=&quot;fa-solid fa-plane-up text-cyan-400 text-2xl animate-pulse&quot;&gt;&lt;/i&gt;
+      &lt;/div&gt;
+      &lt;div&gt;
+        &lt;h1 class=&quot;text-xl font-bold tracking-wider bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent&quot;&gt;RUPP B402 DRONE LAB&lt;/h1&gt;
+        &lt;p class=&quot;text-xs text-slate-400&quot;&gt;ប្រព័ន្ធសិក្សាស្រាវជ្រាវ និងសាកល្បងហោះហើរដ្រូន v1.0&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Live Drone Connection Info --&gt;
+    &lt;div class=&quot;flex items-center gap-4 flex-wrap text-xs&quot;&gt;
+      &lt;div class=&quot;flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700&quot;&gt;
+        &lt;span class=&quot;w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping&quot;&gt;&lt;/span&gt;
+        &lt;span class=&quot;text-slate-300&quot;&gt;ESP32: &lt;strong id=&quot;status-esp&quot; class=&quot;text-emerald-400&quot;&gt;ភ្ជាប់រួចរាល់&lt;/strong&gt;&lt;/span&gt;
+      &lt;/div&gt;
+      
+      &lt;div class=&quot;flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700&quot;&gt;
+        &lt;i class=&quot;fa-solid fa-battery-three-quarters text-amber-400&quot;&gt;&lt;/i&gt;
+        &lt;span class=&quot;text-slate-300&quot;&gt;ថ្មដ្រូន: &lt;strong id=&quot;telemetry-battery&quot; class=&quot;text-amber-400&quot;&gt;12.6V&lt;/strong&gt;&lt;/span&gt;
+      &lt;/div&gt;
+
+      &lt;button id=&quot;btn-arm&quot; onclick=&quot;toggleArmDrone()&quot; class=&quot;bg-red-600 hover:bg-red-500 active:scale-95 text-white font-bold px-4 py-1.5 rounded-lg shadow-lg shadow-red-900/30 transition duration-150 flex items-center gap-2&quot;&gt;
+        &lt;i class=&quot;fa-solid fa-power-off&quot;&gt;&lt;/i&gt;
+        &lt;span id=&quot;arm-text&quot;&gt;Armed Drone (ហោះ)&lt;/span&gt;
+      &lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/header&gt;
+
+  &lt;!-- MAIN CONTAINER GRID --&gt;
+  &lt;main class=&quot;flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6&quot;&gt;
+    
+    &lt;!-- LEFT SIDE: 3D SIMULATOR &amp; FLIGHT TELEMETRY (7 Cols) --&gt;
+    &lt;section class=&quot;lg:col-span-7 flex flex-col gap-6&quot;&gt;
+      
+      &lt;!-- 3D Flight Window (Canvas Container) --&gt;
+      &lt;div class=&quot;glass-card rounded-2xl overflow-hidden relative flex flex-col border border-slate-800 shadow-xl&quot;&gt;
+        &lt;div class=&quot;px-5 py-3 border-b border-slate-800 flex items-center justify-between&quot;&gt;
+          &lt;div class=&quot;flex items-center gap-2&quot;&gt;
+            &lt;i class=&quot;fa-solid fa-gamepad text-cyan-400&quot;&gt;&lt;/i&gt;
+            &lt;span class=&quot;font-semibold text-slate-200&quot;&gt;ផ្ទៃហោះហើរ 3D Simulator (Virtual Space)&lt;/span&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;flex gap-2&quot;&gt;
+            &lt;button onclick=&quot;toggleAxesHelper()&quot; class=&quot;text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1 rounded border border-slate-700 transition&quot;&gt;
+              &lt;i class=&quot;fa-solid fa-arrows-to-dot mr-1&quot;&gt;&lt;/i&gt; បិទ/បើក អ័ក្ស (Axes)
+            &lt;/button&gt;
+            &lt;button onclick=&quot;resetDrone()&quot; class=&quot;text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1 rounded border border-slate-700 transition&quot;&gt;
+              &lt;i class=&quot;fa-solid fa-arrows-rotate mr-1&quot;&gt;&lt;/i&gt; កំណត់ឡើងវិញ
+            &lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        
+        &lt;!-- Live HUD Stats overlay --&gt;
+        &lt;div class=&quot;absolute top-14 left-4 z-10 glass-card p-3 rounded-xl border border-slate-700/60 text-xs flex flex-col gap-1 text-slate-300 pointer-events-none&quot;&gt;
+          &lt;div&gt;Pitch​ ទៅមុខ/ថយក្រោយ លើ Y-Axis: &lt;span id=&quot;hud-pitch&quot; class=&quot;font-mono text-cyan-400&quot;&gt;0.0°&lt;/span&gt;&lt;/div&gt;
+          &lt;div&gt;Roll បត់ឆ្វេង/ស្តាំ លើ X-Axis: &lt;span id=&quot;hud-roll&quot; class=&quot;font-mono text-cyan-400&quot;&gt;0.0°&lt;/span&gt;&lt;/div&gt;
+          &lt;div&gt;Yaw  បង្វិលខ្លួនរ  Z-Axis : &lt;span id=&quot;hud-yaw&quot; class=&quot;font-mono text-cyan-400&quot;&gt;0.0°&lt;/span&gt;&lt;/div&gt;
+          &lt;div&gt;កម្ពស់: &lt;span id=&quot;hud-alt&quot; class=&quot;font-mono text-emerald-400&quot;&gt;0.1m&lt;/span&gt;&lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;absolute top-14 right-4 z-10 glass-card p-3 rounded-xl border border-slate-700/60 text-xs flex flex-col gap-1 text-slate-300 pointer-events-none w-28&quot;&gt;
+          &lt;div class=&quot;text-center font-bold border-b border-slate-800 pb-1 mb-1 text-[10px] text-slate-400&quot;&gt;ល្បឿនម៉ូទ័រ (M)&lt;/div&gt;
+          &lt;div class=&quot;flex justify-between&quot;&gt;&lt;span&gt;M1 (CW):&lt;/span&gt; &lt;span id=&quot;m-fr&quot; class=&quot;font-mono text-rose-400&quot;&gt;0%&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;flex justify-between&quot;&gt;&lt;span&gt;M2 (CCW):&lt;/span&gt; &lt;span id=&quot;m-fl&quot; class=&quot;font-mono text-rose-400&quot;&gt;0%&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;flex justify-between&quot;&gt;&lt;span&gt;M3 (CCW):&lt;/span&gt; &lt;span id=&quot;m-br&quot; class=&quot;font-mono text-rose-400&quot;&gt;0%&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;flex justify-between&quot;&gt;&lt;span&gt;M4 (CW):&lt;/span&gt; &lt;span id=&quot;m-bl&quot; class=&quot;font-mono text-rose-400&quot;&gt;0%&lt;/span&gt;&lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;!-- Canvas for Three.js --&gt;
+        &lt;div id=&quot;threejs-container&quot; class=&quot;w-full h-80 sm:h-[420px] bg-slate-950 relative&quot;&gt;
+          &lt;!-- Floating Interactive Controller Overlay --&gt;
+          &lt;div id=&quot;active-control-overlay&quot; class=&quot;absolute bottom-4 left-4 right-4 z-10 glass-card p-3 rounded-xl border border-slate-700/60 text-[11px] text-slate-300 transition-all duration-150 opacity-0 pointer-events-none flex flex-wrap justify-between items-center gap-2&quot;&gt;
+            &lt;div class=&quot;flex items-center gap-2&quot;&gt;
+              &lt;span class=&quot;w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse&quot;&gt;&lt;/span&gt;
+              &lt;span class=&quot;text-slate-400 font-semibold&quot;&gt;ការបញ្ជាបញ្ជូន៖&lt;/span&gt;
+              &lt;strong id=&quot;active-action-name&quot; class=&quot;text-cyan-400 font-bold uppercase&quot;&gt;គ្មាន&lt;/strong&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;flex gap-4&quot;&gt;
+              &lt;div&gt;Axis X (Roll): &lt;span id=&quot;overlay-axis-x&quot; class=&quot;font-mono text-emerald-400 font-semibold&quot;&gt;0.0°&lt;/span&gt;&lt;/div&gt;
+              &lt;div&gt;Axis Y (Pitch): &lt;span id=&quot;overlay-axis-y&quot; class=&quot;font-mono text-emerald-400 font-semibold&quot;&gt;0.0°&lt;/span&gt;&lt;/div&gt;
+              &lt;div&gt;Axis Z (Yaw): &lt;span id=&quot;overlay-axis-z&quot; class=&quot;font-mono text-emerald-400 font-semibold&quot;&gt;0.0°&lt;/span&gt;&lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;flex gap-3 border-l border-slate-700 pl-3&quot;&gt;
+              &lt;div&gt;Kp: &lt;span id=&quot;overlay-pid-kp&quot; class=&quot;font-mono text-rose-400 font-semibold&quot;&gt;1.2&lt;/span&gt;&lt;/div&gt;
+              &lt;div&gt;Ki: &lt;span id=&quot;overlay-pid-ki&quot; class=&quot;font-mono text-amber-400 font-semibold&quot;&gt;0.05&lt;/span&gt;&lt;/div&gt;
+              &lt;div&gt;Kd: &lt;span id=&quot;overlay-pid-kd&quot; class=&quot;font-mono text-cyan-400 font-semibold&quot;&gt;0.45&lt;/span&gt;&lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;!-- ADVANCED FLIGHT CONTROLLERS (MOUSE CLICK &amp; TOUCH) --&gt;
+        &lt;div class=&quot;p-5 border-t border-slate-800 bg-slate-900/60 flex flex-col gap-4&quot;&gt;
+          &lt;div class=&quot;flex items-center justify-between text-xs text-slate-400&quot;&gt;
+            &lt;span&gt;&lt;i class=&quot;fa-solid fa-keyboard mr-1 text-cyan-400&quot;&gt;&lt;/i&gt; បញ្ជាតាម Keyboard: ប្រើប្រាស់ Arrow Keys (ផ្អៀង) និង Q/E/W/S (ទិសដៅ/កម្ពស់)&lt;/span&gt;
+            &lt;span class=&quot;text-cyan-400 font-semibold&quot;&gt;&lt;i class=&quot;fa-solid fa-circle-nodes&quot;&gt;&lt;/i&gt; ចុច Mouse ឬ Touch ជាប់លើប៊ូតុងខាងក្រោមដើម្បីហោះហើរ&lt;/span&gt;
+          &lt;/div&gt;
+
+          &lt;!-- Dual Joystick D-Pads for Virtual Control --&gt;
+          &lt;div class=&quot;grid grid-cols-2 gap-4 max-w-md mx-auto w-full&quot;&gt;
+            
+            &lt;!-- Left Stick: Throttle (Altitude) &amp; Yaw (Rotation) --&gt;
+            &lt;div class=&quot;flex flex-col items-center gap-2 p-3 bg-slate-950/50 rounded-xl border border-slate-800&quot;&gt;
+              &lt;span class=&quot;text-[10px] text-slate-400 uppercase font-semibold&quot;&gt;Throttle &amp; Yaw (ដៃឆ្វេង)&lt;/span&gt;
+              &lt;div class=&quot;grid grid-cols-3 gap-2 w-32 h-32 relative&quot;&gt;
+                &lt;div&gt;&lt;/div&gt;
+                &lt;!-- Throttle Up --&gt;
+                &lt;button 
+                  onmousedown=&quot;startControl(&#x27;throttleUp&#x27;)&quot; onmouseup=&quot;stopControl(&#x27;throttleUp&#x27;)&quot; 
+                  ontouchstart=&quot;startControl(&#x27;throttleUp&#x27;)&quot; ontouchend=&quot;stopControl(&#x27;throttleUp&#x27;)&quot;
+                  class=&quot;bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg flex items-center justify-center text-lg active:bg-cyan-500/20 select-none&quot;&gt;
+                  &lt;i class=&quot;fa-solid fa-chevron-up&quot;&gt;&lt;/i&gt;
+                &lt;/button&gt;
+                &lt;div&gt;&lt;/div&gt;
+                
+                &lt;!-- Yaw Left --&gt;
+                &lt;button 
+                  onmousedown=&quot;startControl(&#x27;yawLeft&#x27;)&quot; onmouseup=&quot;stopControl(&#x27;yawLeft&#x27;)&quot; 
+                  ontouchstart=&quot;startControl(&#x27;yawLeft&#x27;)&quot; ontouchend=&quot;stopControl(&#x27;yawLeft&#x27;)&quot;
+                  class=&quot;bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg flex items-center justify-center text-lg active:bg-cyan-500/20 select-none&quot;&gt;
+                  &lt;i class=&quot;fa-solid fa-rotate-left&quot;&gt;&lt;/i&gt;
+                &lt;/button&gt;
+                &lt;div class=&quot;bg-slate-900 border border-slate-800 rounded-lg flex items-center justify-center text-[10px] text-slate-500 font-bold&quot;&gt;ALT&lt;/div&gt;
+                &lt;!-- Yaw Right --&gt;
+                &lt;button 
+                  onmousedown=&quot;startControl(&#x27;yawRight&#x27;)&quot; onmouseup=&quot;stopControl(&#x27;yawRight&#x27;)&quot; 
+                  ontouchstart=&quot;startControl(&#x27;yawRight&#x27;)&quot; ontouchend=&quot;stopControl(&#x27;yawRight&#x27;)&quot;
+                  class=&quot;bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg flex items-center justify-center text-lg active:bg-cyan-500/20 select-none&quot;&gt;
+                  &lt;i class=&quot;fa-solid fa-rotate-right&quot;&gt;&lt;/i&gt;
+                &lt;/button&gt;
+                
+                &lt;div&gt;&lt;/div&gt;
+                &lt;!-- Throttle Down --&gt;
+                &lt;button 
+                  onmousedown=&quot;startControl(&#x27;throttleDown&#x27;)&quot; onmouseup=&quot;stopControl(&#x27;throttleDown&#x27;)&quot; 
+                  ontouchstart=&quot;startControl(&#x27;throttleDown&#x27;)&quot; ontouchend=&quot;stopControl(&#x27;throttleDown&#x27;)&quot;
+                  class=&quot;bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg flex items-center justify-center text-lg active:bg-cyan-500/20 select-none&quot;&gt;
+                  &lt;i class=&quot;fa-solid fa-chevron-down&quot;&gt;&lt;/i&gt;
+                &lt;/button&gt;
+                &lt;div&gt;&lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;!-- Right Stick: Pitch (Forward/Backward) &amp; Roll (Left/Right) --&gt;
+            &lt;div class=&quot;flex flex-col items-center gap-2 p-3 bg-slate-950/50 rounded-xl border border-slate-800&quot;&gt;
+              &lt;span class=&quot;text-[10px] text-slate-400 uppercase font-semibold&quot;&gt;Pitch &amp; Roll (ដៃស្តាំ)&lt;/span&gt;
+              &lt;div class=&quot;grid grid-cols-3 gap-2 w-32 h-32 relative&quot;&gt;
+                &lt;div&gt;&lt;/div&gt;
+                &lt;!-- Pitch Forward --&gt;
+                &lt;button 
+                  onmousedown=&quot;startControl(&#x27;pitchForward&#x27;)&quot; onmouseup=&quot;stopControl(&#x27;pitchForward&#x27;)&quot; 
+                  ontouchstart=&quot;startControl(&#x27;pitchForward&#x27;)&quot; ontouchend=&quot;stopControl(&#x27;pitchForward&#x27;)&quot;
+                  class=&quot;bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg flex items-center justify-center text-lg active:bg-cyan-500/20 select-none&quot;&gt;
+                  ▲
+                &lt;/button&gt;
+                &lt;div&gt;&lt;/div&gt;
+                
+                &lt;!-- Roll Left --&gt;
+                &lt;button 
+                  onmousedown=&quot;startControl(&#x27;rollLeft&#x27;)&quot; onmouseup=&quot;stopControl(&#x27;rollLeft&#x27;)&quot; 
+                  ontouchstart=&quot;startControl(&#x27;rollLeft&#x27;)&quot; ontouchend=&quot;stopControl(&#x27;rollLeft&#x27;)&quot;
+                  class=&quot;bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg flex items-center justify-center text-lg active:bg-cyan-500/20 select-none&quot;&gt;
+                  ◀
+                &lt;/button&gt;
+                &lt;div class=&quot;bg-slate-900 border border-slate-800 rounded-lg flex items-center justify-center text-[10px] text-slate-500 font-bold&quot;&gt;ATT&lt;/div&gt;
+                &lt;!-- Roll Right --&gt;
+                &lt;button 
+                  onmousedown=&quot;startControl(&#x27;rollRight&#x27;)&quot; onmouseup=&quot;stopControl(&#x27;rollRight&#x27;)&quot; 
+                  ontouchstart=&quot;startControl(&#x27;rollRight&#x27;)&quot; ontouchend=&quot;stopControl(&#x27;rollRight&#x27;)&quot;
+                  class=&quot;bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg flex items-center justify-center text-lg active:bg-cyan-500/20 select-none&quot;&gt;
+                  ▶
+                &lt;/button&gt;
+                
+                &lt;div&gt;&lt;/div&gt;
+                &lt;!-- Pitch Backward --&gt;
+                &lt;button 
+                  onmousedown=&quot;startControl(&#x27;pitchBackward&#x27;)&quot; onmouseup=&quot;stopControl(&#x27;pitchBackward&#x27;)&quot; 
+                  ontouchstart=&quot;startControl(&#x27;pitchBackward&#x27;)&quot; ontouchend=&quot;stopControl(&#x27;pitchBackward&#x27;)&quot;
+                  class=&quot;bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg flex items-center justify-center text-lg active:bg-cyan-500/20 select-none&quot;&gt;
+                  ▼
+                &lt;/button&gt;
+                &lt;div&gt;&lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+      &lt;/div&gt;
+
+      &lt;!-- PID SIMULATION CONTROL PANEL --&gt;
+      &lt;div class=&quot;glass-card rounded-2xl p-5 border border-slate-800 shadow-lg flex flex-col gap-4&quot;&gt;
+        &lt;div class=&quot;flex items-center justify-between border-b border-slate-800 pb-3&quot;&gt;
+          &lt;div class=&quot;flex items-center gap-2&quot;&gt;
+            &lt;i class=&quot;fa-solid fa-sliders text-amber-400&quot;&gt;&lt;/i&gt;
+            &lt;h3 class=&quot;font-bold text-slate-200&quot;&gt;តម្រូវការលំនឹង PID Tuning (IMU Stability)&lt;/h3&gt;
+          &lt;/div&gt;
+          &lt;span class=&quot;text-xs text-slate-400 bg-slate-800 px-2 py-1 rounded&quot;&gt;រង្វង់មតិត្រឡប់ (Feedback Loop)&lt;/span&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;grid grid-cols-1 md:grid-cols-2 gap-6&quot;&gt;
+          &lt;!-- PID Sliders --&gt;
+          &lt;div class=&quot;flex flex-col gap-4&quot;&gt;
+            &lt;div&gt;
+              &lt;div class=&quot;flex justify-between text-xs mb-1&quot;&gt;
+                &lt;span class=&quot;text-rose-400 font-bold&quot;&gt;Kp (Proportional Gain)&lt;/span&gt;
+                &lt;span id=&quot;kp-val&quot; class=&quot;font-mono text-rose-400&quot;&gt;1.2&lt;/span&gt;
+              &lt;/div&gt;
+              &lt;input type=&quot;range&quot; id=&quot;kp-range&quot; min=&quot;0.1&quot; max=&quot;4.0&quot; step=&quot;0.1&quot; value=&quot;1.2&quot; oninput=&quot;updatePIDValues()&quot; class=&quot;w-full accent-rose-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer&quot;&gt;
+              &lt;p class=&quot;text-[10px] text-slate-400 mt-1&quot;&gt;កែតម្រូវកម្លាំងតបទៅនឹងកំហុសបច្ចុប្បន្ន (បណ្តាលឱ្យរេបើសិនជាខ្ពស់ពេក)&lt;/p&gt;
+            &lt;/div&gt;
+
+            &lt;div&gt;
+              &lt;div class=&quot;flex justify-between text-xs mb-1&quot;&gt;
+                &lt;span class=&quot;text-amber-400 font-bold&quot;&gt;Ki (Integral Gain)&lt;/span&gt;
+                &lt;span id=&quot;ki-val&quot; class=&quot;font-mono text-amber-400&quot;&gt;0.05&lt;/span&gt;
+              &lt;/div&gt;
+              &lt;input type=&quot;range&quot; id=&quot;ki-range&quot; min=&quot;0.0&quot; max=&quot;1.0&quot; step=&quot;0.01&quot; value=&quot;0.05&quot; oninput=&quot;updatePIDValues()&quot; class=&quot;w-full accent-amber-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer&quot;&gt;
+              &lt;p class=&quot;text-[10px] text-slate-400 mt-1&quot;&gt;កែតម្រូវកំហុសសន្សំរយៈពេលវែង (បំបាត់កំហុសលំអៀងទីតាំងយូរអង្វែង)&lt;/p&gt;
+            &lt;/div&gt;
+
+            &lt;div&gt;
+              &lt;div class=&quot;flex justify-between text-xs mb-1&quot;&gt;
+                &lt;span class=&quot;text-cyan-400 font-bold&quot;&gt;Kd (Derivative Gain)&lt;/span&gt;
+                &lt;span id=&quot;kd-val&quot; class=&quot;font-mono text-cyan-400&quot;&gt;0.45&lt;/span&gt;
+              &lt;/div&gt;
+              &lt;input type=&quot;range&quot; id=&quot;kd-range&quot; min=&quot;0.0&quot; max=&quot;2.0&quot; step=&quot;0.05&quot; value=&quot;0.45&quot; oninput=&quot;updatePIDValues()&quot; class=&quot;w-full accent-cyan-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer&quot;&gt;
+              &lt;p class=&quot;text-[10px] text-slate-400 mt-1&quot;&gt;ទប់ស្កាត់ល្បឿននៃការប្រែប្រួលខ្លាំងពេក (កាត់បន្ថយការយោលខ្លាំង)&lt;/p&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+
+          &lt;!-- Real-time PID Chart Plotter --&gt;
+          &lt;div class=&quot;bg-slate-950/80 rounded-xl p-3 border border-slate-800 flex flex-col justify-between h-[210px] relative&quot;&gt;
+            &lt;span class=&quot;text-[10px] text-slate-400 absolute top-2 right-2&quot;&gt;&lt;i class=&quot;fa-solid fa-chart-line&quot;&gt;&lt;/i&gt; Step Response&lt;/span&gt;
+            &lt;div class=&quot;w-full h-full flex items-center justify-center&quot;&gt;
+              &lt;canvas id=&quot;pidChart&quot;&gt;&lt;/canvas&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;!-- RIGHT SIDE: INTERACTIVE CURRICULUM, CODE &amp; AI CHAT (5 Cols) --&gt;
+    &lt;section class=&quot;lg:col-span-5 flex flex-col gap-6&quot;&gt;
+      
+      &lt;!-- Tab Navigation --&gt;
+      &lt;div class=&quot;bg-slate-900 p-1.5 rounded-xl border border-slate-800 flex gap-1&quot;&gt;
+        &lt;button id=&quot;tab-learn&quot; onclick=&quot;switchRightTab(&#x27;learn&#x27;)&quot; class=&quot;flex-1 py-2 text-xs font-bold rounded-lg bg-cyan-600 text-slate-50 transition duration-150&quot;&gt;
+          &lt;i class=&quot;fa-solid fa-graduation-cap mr-1&quot;&gt;&lt;/i&gt; មេរៀន &amp; កូដ
+        &lt;/button&gt;
+        &lt;button id=&quot;tab-ai&quot; onclick=&quot;switchRightTab(&#x27;ai&#x27;)&quot; class=&quot;flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-slate-100 transition duration-150&quot;&gt;
+          &lt;i class=&quot;fa-solid fa-robot mr-1&quot;&gt;&lt;/i&gt; ជំនួយការ AI (Gemini)
+        &lt;/button&gt;
+      &lt;/div&gt;
+
+      &lt;!-- TAB 1 CONTENT: DRONE CURRICULUM &amp; ESP32 CONTROLLER --&gt;
+      &lt;div id=&quot;content-learn&quot; class=&quot;flex flex-col gap-6&quot;&gt;
+        
+        &lt;!-- Interactive Step Selector --&gt;
+        &lt;div class=&quot;glass-card rounded-2xl p-5 border border-slate-800 shadow-md&quot;&gt;
+          &lt;h3 class=&quot;font-bold text-sm text-slate-300 mb-3&quot;&gt;&lt;i class=&quot;fa-solid fa-list-check text-cyan-400 mr-2&quot;&gt;&lt;/i&gt;ដំណាក់កាលការដំឡើងដ្រូន (ESP32 Development)&lt;/h3&gt;
+          
+          &lt;div class=&quot;grid grid-cols-4 gap-2&quot;&gt;
+            &lt;button onclick=&quot;dbSwitchStage(1)&quot; id=&quot;btn-stg-1&quot; class=&quot;py-2 text-[11px] font-bold rounded-lg border border-cyan-500/40 bg-cyan-950/30 text-cyan-400 shadow&quot;&gt;គ្រោង &amp; ម៉ូទ័រ&lt;/button&gt;
+            &lt;button onclick=&quot;dbSwitchStage(2)&quot; id=&quot;btn-stg-2&quot; class=&quot;py-2 text-[11px] font-bold rounded-lg border border-slate-800 bg-slate-900 text-slate-400&quot;&gt;Calibration&lt;/button&gt;
+            &lt;button onclick=&quot;dbSwitchStage(3)&quot; id=&quot;btn-stg-3&quot; class=&quot;py-2 text-[11px] font-bold rounded-lg border border-slate-800 bg-slate-900 text-slate-400&quot;&gt;តេស្ត ESC&lt;/button&gt;
+            &lt;button onclick=&quot;dbSwitchStage(4)&quot; id=&quot;btn-stg-4&quot; class=&quot;py-2 text-[11px] font-bold rounded-lg border border-slate-800 bg-slate-900 text-slate-400&quot;&gt;កូដហោះហើរ&lt;/button&gt;
+          &lt;/div&gt;
+
+          &lt;!-- Selected Stage Detail Box --&gt;
+          &lt;div class=&quot;mt-4 p-4 rounded-xl bg-slate-950/60 border border-slate-800 flex flex-col gap-2&quot;&gt;
+            &lt;h4 id=&quot;db-stage-title&quot; class=&quot;font-bold text-cyan-400 text-sm&quot;&gt;ដំណាក់កាលទី ១៖ ការរៀបចំគ្រឿងបង្គុំ (Frame &amp; Motors)&lt;/h4&gt;
+            &lt;p id=&quot;db-stage-text&quot; class=&quot;text-xs text-slate-300 leading-relaxed&quot;&gt;រៀបចំតំឡើងគ្រោងកាបូន F450 និងភ្ជាប់ម៉ូទ័រ Brushless ជាមួយ ESC ឱ្យបានត្រឹមត្រូវតាមទិសដៅដែលបានកំណត់ (CW &amp; CCW)។&lt;/p&gt;
+            
+            &lt;div class=&quot;border-t border-slate-800/80 pt-2 mt-2&quot;&gt;
+              &lt;span class=&quot;text-[10px] text-slate-400 uppercase font-semibold&quot;&gt;បញ្ជីត្រូវអនុវត្ត (To-do List):&lt;/span&gt;
+              &lt;ul id=&quot;db-stage-todo&quot; class=&quot;list-disc pl-4 text-xs text-slate-300 mt-1 flex flex-col gap-1&quot;&gt;
+                &lt;li&gt;ភ្ជាប់ ESC ទាំង៤ ទៅកាន់ម៉ូទ័រ&lt;/li&gt;
+                &lt;li&gt;ផ្សារខ្សែភ្លើងផ្គត់ផ្គង់ power distribution board&lt;/li&gt;
+                &lt;li&gt;ពិនិត្យការតភ្ជាប់ប្រភពថ្ម 11.1V (3S LiPo)&lt;/li&gt;
+              &lt;/ul&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;!-- ESP32 Mock Code IDE with Upload Emulator --&gt;
+        &lt;div class=&quot;glass-card rounded-2xl border border-slate-800 shadow-md flex flex-col overflow-hidden&quot;&gt;
+          &lt;div class=&quot;bg-slate-950 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs&quot;&gt;
+            &lt;div class=&quot;flex items-center gap-2&quot;&gt;
+              &lt;i class=&quot;fa-solid fa-code text-cyan-400&quot;&gt;&lt;/i&gt;
+              &lt;span id=&quot;db-code-file-name&quot; class=&quot;font-mono text-slate-300&quot;&gt;ESP32_Drone_Assembly.ino&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;flex items-center gap-2&quot;&gt;
+              &lt;button onclick=&quot;dbCopyCode()&quot; class=&quot;text-slate-400 hover:text-cyan-400 p-1.5 transition&quot;&gt;&lt;i class=&quot;fa-regular fa-copy&quot;&gt;&lt;/i&gt; Copy&lt;/button&gt;
+              &lt;button id=&quot;btn-upload-code&quot; onclick=&quot;simulateUpload()&quot; class=&quot;bg-cyan-500 hover:bg-cyan-400 active:scale-95 text-slate-950 font-bold px-3 py-1 rounded transition duration-150&quot;&gt;
+                &lt;i class=&quot;fa-solid fa-upload&quot;&gt;&lt;/i&gt; ផ្ទុកកូដ (Upload)
+              &lt;/button&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+
+          &lt;!-- Code Editor Area --&gt;
+          &lt;textarea id=&quot;db-code-area&quot; readonly class=&quot;bg-slate-950 text-emerald-400 font-mono text-[11px] p-4 h-60 w-full resize-none border-none focus:outline-none leading-relaxed&quot;&gt;// ESP32 Drone Frame Config
+#define MOTOR_1 12  // Front-Right (CW)
+#define MOTOR_2 14  // Front-Left (CCW)
+#define MOTOR_3 27  // Rear-Right (CCW)
+#define MOTOR_4 26  // Rear-Left (CW)
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println(&quot;--- RUPP B402 Drone Setup Ready ---&quot;);
+}&lt;/textarea&gt;
+
+          &lt;!-- Upload Progress &amp; Debug Serial Terminal --&gt;
+          &lt;div class=&quot;bg-slate-950 border-t border-slate-800 p-3&quot;&gt;
+            &lt;div class=&quot;flex justify-between items-center text-[10px] text-slate-500 mb-1&quot;&gt;
+              &lt;span&gt;សៀរៀលម៉ូនីទ័រ (Serial Monitor)&lt;/span&gt;
+              &lt;span id=&quot;upload-status&quot; class=&quot;text-slate-400&quot;&gt;Status: ធម្មតា&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div id=&quot;serial-terminal&quot; class=&quot;bg-slate-950 rounded border border-slate-800 p-2.5 h-20 text-[10px] font-mono text-amber-500 overflow-y-auto leading-relaxed&quot;&gt;
+              [SYSTEM]: រង់ចាំការបញ្ចូលកម្មវិធី... Click &quot;ផ្ទុកកូដ&quot; ដើម្បីចាប់ផ្តើម។
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+      &lt;/div&gt;
+
+      &lt;!-- TAB 2 CONTENT: GEMINI DRONE AI ASSISTANT &amp; LOCAL KB --&gt;
+      &lt;div id=&quot;content-ai&quot; class=&quot;hidden flex flex-col gap-4&quot;&gt;
+        
+        &lt;!-- Gemini API Key Setup Panel --&gt;
+        &lt;div class=&quot;glass-card rounded-2xl p-4 border border-slate-800 shadow-md flex flex-col gap-3&quot;&gt;
+          &lt;div class=&quot;flex items-center justify-between&quot;&gt;
+            &lt;span class=&quot;text-xs font-semibold text-slate-300&quot;&gt;
+              &lt;i class=&quot;fa-solid fa-key text-amber-500 mr-1.5&quot;&gt;&lt;/i&gt; ការកំណត់ Google Gemini API Key
+            &lt;/span&gt;
+            &lt;span id=&quot;api-status-badge&quo<style>t; class=&quot;text-[9px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/20 font-bold uppercase tracking-wider&quot;&gt;
+              Local KB Mode
+            &lt;/span&gt;
+          &lt;/div&gt;
+          
+          &lt;div class=&quot;flex gap-2&quot;&gt;
+            &lt;div class=&quot;relative flex-1&quot;&gt;
+              &lt;input type=&quot;password&quot; id=&quot;gemini-api-key-input&quot; placeholder=&quot;បញ្ចូល Gemini API Key នៅទីនេះ...&quot; class=&quot;w-full bg-slate-950 text-xs text-slate-200 rounded-lg pl-3 pr-8 py-2 border border-slate-800 focus:outline-none focus:border-cyan-500 font-mono&quot;&gt;
+              &lt;button onclick=&quot;toggleApiKeyVisibility()&quot; class=&quot;absolute right-2.5 top-2 text-slate-500 hover:text-slate-300&quot;&gt;
+                &lt;i id=&quot;key-visibility-icon&quot; class=&quot;fa-solid fa-eye-slash text-xs&quot;&gt;&lt;/i&gt;
+              &lt;/button&gt;
+            &lt;/div&gt;
+            &lt;button onclick=&quot;saveGeminiKey()&quot; class=&quot;bg-amber-600 hover:bg-amber-500 active:scale-95 text-slate-950 font-bold px-3 py-2 rounded-lg text-xs transition duration-150 flex items-center gap-1&quot;&gt;
+              &lt;i class=&quot;fa-solid fa-floppy-disk&quot;&gt;&lt;/i&gt; រក្សាទុក
+            &lt;/button&gt;
+            &lt;button onclick=&quot;clearGeminiKey()&quot; class=&quot;bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 px-2.5 py-2 rounded-lg text-xs transition duration-150&quot; title=&quot;លុបចោល&quot;&gt;
+              &lt;i class=&quot;fa-solid fa-trash-can&quot;&gt;&lt;/i&gt;
+            &lt;/button&gt;
+          &lt;/div&gt;
+          
+          &lt;p class=&quot;text-[10px] text-slate-400 leading-relaxed&quot;&gt;
+            * ព័ត៌មានជំនួយ៖ ប្រសិនបើមិនទាន់មាន API Key ទេ ប្រព័ន្ធនឹងដំណើរការឆ្លើយតបជា**ភាសាខ្មែរ**តាមរយៈ &lt;b&gt;Local Knowledge Base (ស្វ័យប្រវត្ត)&lt;/b&gt; ភ្លាមៗ។
+          &lt;/p&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;glass-card rounded-2xl p-5 border border-slate-800 shadow-md flex flex-col gap-4&quot;&gt;
+          
+          &lt;div class=&quot;flex items-center gap-3&quot;&gt;
+            &lt;div class=&quot;bg-gradient-to-r from-cyan-400 to-blue-500 p-2 rounded-lg text-slate-950&quot;&gt;
+              &lt;i class=&quot;fa-solid fa-robot text-lg&quot;&gt;&lt;/i&gt;
+            &lt;/div&gt;
+            &lt;div&gt;
+              &lt;h3 class=&quot;font-bold text-slate-200&quot;&gt;ជំនួយការបច្ចេកវិទ្យាដ្រូន AI&lt;/h3&gt;
+              &lt;p class=&quot;text-xs text-slate-400&quot;&gt;សួរដេញដោលអំពីការសរសេរកូដ ESP32, PID Loops ឬ IMU Sensors&lt;/p&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+
+          &lt;!-- Pre-set helpful templates in Khmer --&gt;
+          &lt;div class=&quot;grid grid-cols-2 gap-2 text-xs&quot;&gt;
+            &lt;button onclick=&quot;setAiQuery(&#x27;តើ PID Tuning គឺជាអ្វីហើយវាដំណើរការយ៉ាងដូចម្តេច?&#x27;)&quot; class=&quot;bg-slate-800/80 hover:bg-slate-700 p-2.5 rounded-lg text-slate-300 border border-slate-700 transition text-left leading-relaxed&quot;&gt;
+              &lt;i class=&quot;fa-solid fa-circle-question text-cyan-400 mr-1&quot;&gt;&lt;/i&gt; តើ PID ដំណើរការយ៉ាងដូចម្តេច?
+            &lt;/button&gt;
+            &lt;button onclick=&quot;setAiQuery(&#x27;របៀបភ្ជាប់ MPU6050 ទៅនឹង ESP32 សម្រាប់ដ្រូន&#x27;)&quot; class=&quot;bg-slate-800/80 hover:bg-slate-700 p-2.5 rounded-lg text-slate-300 border border-slate-700 transition text-left leading-relaxed&quot;&gt;
+              &lt;i class=&quot;fa-solid fa-plug text-cyan-400 mr-1&quot;&gt;&lt;/i&gt; របៀបភ្ជាប់ MPU6050?
+            &lt;/button&gt;
+          &lt;/div&gt;
+
+          &lt;!-- Chat History --&gt;
+          &lt;div id=&quot;ai-chat-history&quot; class=&quot;bg-slate-950 rounded-xl p-4 h-64 overflow-y-auto border border-slate-800 text-xs flex flex-col gap-3&quot;&gt;
+            &lt;div class=&quot;text-slate-400 italic text-center my-auto&quot;&gt;
+              គ្មានការជជែកបច្ចុប្បន្ន។ សូមសួរជាភាសាខ្មែរ ឬចុចលើគំរូសំណួរខាងលើ។
+            &lt;/div&gt;
+          &lt;/div&gt;
+
+          &lt;!-- Chat Input Field --&gt;
+          &lt;div class=&quot;flex gap-2&quot;&gt;
+            &lt;input type=&quot;text&quot; id=&quot;ai-input&quot; placeholder=&quot;សរសេរសំណួររបស់អ្នកនៅទីនេះ...&quot; class=&quot;flex-1 bg-slate-950 text-xs text-slate-100 rounded-lg px-3 py-2.5 border border-slate-800 focus:outline-none focus:border-cyan-500&quot;&gt;
+            &lt;button onclick=&quot;sendAiMessage()&quot; id=&quot;btn-send-ai&quot; class=&quot;bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-slate-950 font-bold px-4 rounded-lg flex items-center justify-center transition duration-150&quot;&gt;
+              &lt;i class=&quot;fa-solid fa-paper-plane text-slate-950&quot;&gt;&lt;/i&gt;
+            &lt;/button&gt;
+          &lt;/div&gt;
+
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+    &lt;/section&gt;
+
+  &lt;/main&gt;
+
+  &lt;!-- CUSTOM ALERTS &amp; NOTIFICATIONS (Toast Box) --&gt;
+  &lt;div id=&quot;toast-box&quot; class=&quot;fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none&quot;&gt;
+    &lt;div id=&quot;toast-content&quot; class=&quot;bg-slate-900 border border-emerald-500/40 text-emerald-400 text-xs font-semibold px-4 py-3 rounded-xl shadow-xl flex items-center gap-3&quot;&gt;
+      &lt;i class=&quot;fa-solid fa-circle-check&quot;&gt;&lt;/i&gt;
+      &lt;span id=&quot;toast-text&quot;&gt;រក្សាទុកបានជោគជ័យ!&lt;/span&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- MAIN SCRIPT CONTROLLERS --&gt;
+  &lt;script&gt;
+    // GLOBAL CHAT &amp; API STATE VARIABLES
+    let geminiApiKey = localStorage.getItem(&#x27;rupp_gemini_api_key&#x27;) || &quot;&quot;;
+
+    // TOAST NOTIFICATION UTILITY
+    function showToast(message, isSuccess = true) {
+      const box = document.getElementById(&#x27;toast-box&#x27;);
+      const content = document.getElementById(&#x27;toast-content&#x27;);
+      const text = document.getElementById(&#x27;toast-text&#x27;);
+      
+      text.textContent = message;
+      if (isSuccess) {
+        content.className = &quot;bg-slate-900 border border-emerald-500/40 text-emerald-400 text-xs font-semibold px-4 py-3 rounded-xl shadow-xl flex items-center gap-3&quot;;
+      } else {
+        content.className = &quot;bg-slate-900 border border-rose-500/40 text-rose-400 text-xs font-semibold px-4 py-3 rounded-xl shadow-xl flex items-center gap-3&quot;;
+      }
+      
+      box.classList.remove(&#x27;translate-y-20&#x27;, &#x27;opacity-0&#x27;);
+      box.classList.add(&#x27;translate-y-0&#x27;, &#x27;opacity-100&#x27;);
+      
+      setTimeout(() =&gt; {
+        box.classList.remove(&#x27;translate-y-0&#x27;, &#x27;opacity-100&#x27;);
+        box.classList.add(&#x27;translate-y-20&#x27;, &#x27;opacity-0&#x27;);
+      }, 3000);
+    }
+
+    // TAB MANAGEMENT
+    function switchRightTab(tabName) {
+      const btnLearn = document.getElementById(&#x27;tab-learn&#x27;);
+      const btnAi = document.getElementById(&#x27;tab-ai&#x27;);
+      const contentLearn = document.getElementById(&#x27;content-learn&#x27;);
+      const contentAi = document.getElementById(&#x27;content-ai&#x27;);
+
+      if (tabName === &#x27;learn&#x27;) {
+        btnLearn.className = &quot;flex-1 py-2 text-xs font-bold rounded-lg bg-cyan-600 text-slate-50 transition duration-150&quot;;
+        btnAi.className = &quot;flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-slate-100 transition duration-150&quot;;
+        contentLearn.classList.remove(&#x27;hidden&#x27;);
+        contentAi.classList.add(&#x27;hidden&#x27;);
+      } else {
+        btnAi.className = &quot;flex-1 py-2 text-xs font-bold rounded-lg bg-cyan-600 text-slate-50 transition duration-150&quot;;
+        btnLearn.className = &quot;flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-slate-100 transition duration-150&quot;;
+        contentAi.classList.remove(&#x27;hidden&#x27;);
+        contentLearn.classList.add(&#x27;hidden&#x27;);
+      }
+    }
+
+    // MOCK CURRICULUM DATA
+    const dbStages = {
+      1: {
+        title: &quot;ដំណាក់កាលទី ១៖ ការរៀបចំគ្រឿងបង្គុំ (Frame &amp; Motors)&quot;,
+        color: &quot;#22d3ee&quot;,
+        text: &quot;Drone (UAV – Unmanned Aerial Vehicle) គឺជាយានអវកាសគ្មានមនុស្សបើកបរដែលប្រើបច្ចេកវិទ្យាទំនើបសម្រាប់ការគ្រប់គ្រងដោយស្វ័យប្រវត្តិ ឬបញ្ជាពីចម្ងាយ។ ជំហ៊ានដំបូងត្រូវរៀបចំដំឡើងគ្រោងកាបូន F450 ឬ រូបរាងរ៉ូបូតដែលមានស្រាប់ និងភ្ជាប់ម៉ូទ័រ Brushless ជាមួយ ESC ឱ្យបានត្រឹមត្រូវតាមទិសដៅដែលបានកំណត់ (CW &amp; CCW)។&quot;,
+        file: &quot;ESP32_Drone_Assembly.ino&quot;,
+        todo: [
+          &quot;Pin GPIO6 របស់ ESP32-S3 ត្រូវភ្ជាប់ទៅខ្សែ Signal របស់ ESC ដែលភ្ជាប់ទៅកាន់ម៉ូទ័រ&quot;,
+          &quot;ផ្សារ និងភ្ជាប់ខ្សែភ្លើងផ្គត់ផ្គង់ power distribution board&quot;,
+          &quot;ពិនិត្យការតភ្ជាប់ប្រភពថ្ម 11.1V (3S LiPo)&quot;
+        ]
+      },
+      2: {
+        title: &quot;ដំណាក់កាលទី ២៖ ការក្រិតសេនស័រ MPU6050 (IMU Calibration)&quot;,
+        color: &quot;#f59e0b&quot;,
+        text: &quot;ក្រិតសេនស័រវាស់លំអៀង (MPU6050 Gyro &amp; Accelerometer) ឱ្យស្គាល់កម្រិតសូន្យត្រឹមត្រូវ ដើម្បីរក្សាលំនឹងពេលហោះហើរ Bimini។&quot;,
+        file: &quot;MPU6050_Calibration.ino&quot;,
+        todo: [
+          &quot;ដាក់ដ្រូនឱ្យមានលំនឹងស្មើល្អមុនបើកដំណើរការ&quot;,
+          &quot;អានទិន្នន័យ Offsets ចេញពី MPU6050&quot;,
+          &quot;រក្សាទុកតម្លៃ Offsets ក្នុង EEPROM ឬ Memory&quot;
+        ]
+      },
+      3: {
+        title: &quot;ដំណាក់កាលទី ៣៖ ការក្រិតកម្រិតល្បឿន ESC (ESC Throttle Calibration)&quot;,
+        color: &quot;#3b82f6&quot;,
+        text: &quot;កំណត់ចំណុចល្បឿនអប្បបរមា និងអតិបរមារបស់ម៉ូទ័រតាមរយៈសញ្ញា PWM ចេញពី ESP32 ទៅកាន់ ESC។&quot;,
+        color: &quot;#eab308&quot;,
+        file: &quot;ESC_Throttle_Setup.ino&quot;,
+        todo: [
+          &quot;ផ្ញើសញ្ញា PWM កម្រិតខ្ពស់បំផុតទៅកាន់ ESC&quot;,
+          &quot;ភ្ជាប់ប្រភពភ្លើងទៅកាន់ ESC&quot;,
+          &quot;កាត់បន្ថយសញ្ញា PWM មកកម្រិតទាបបំផុត&quot;
+        ]
+      },
+      4: {
+        title: &quot;ដំណាក់កាលទី ៤៖ កូដគ្រប់គ្រងការហោះហើរ (PID Flight Logic)&quot;,
+        color: &quot;#10b981&quot;,
+        text: &quot;បញ្ចូលកូដគ្រប់គ្រងជើងហោះហើរពេញលេញដោយបញ្ចូល PID Controller ដើម្បីកែតម្រូវល្បឿនម៉ូទ័រទាំង ៤ ដោយស្វ័យប្រវត្តិ។&quot;,
+        file: &quot;ESP32_Quadcopter_PID.ino&quot;,
+        todo: [
+          &quot;គណនា PID Error សម្រាប់ Roll, Pitch, Yaw&quot;,
+          &quot;លាយបញ្ចូលសញ្ញា PID ទៅក្នុងល្បឿនម៉ូទ័រ&quot;,
+          &quot;បើកមុខងារសង្គ្រោះបន្ទាន់ពេលដាច់រលកបញ្ជា&quot;
+        ]
+      }
+    };
+
+    const dbStageCodes = {
+     
+    1: `// ESP32-S3 ESC + Brushless Motor Test (1 Motor)
+
+// Pin setup
+#define ESC_PIN 6
+#define PWM_CHANNEL 0
+#define PWM_FREQ 50       // 50Hz for ESC
+#define PWM_RESOLUTION 16 // 16-bit PWM
+
+// Duty cycle for ESC (1ms - 2ms)
+#define MIN_THROTTLE 3276   // Idle / Stop
+#define MAX_THROTTLE 6553   // Full speed
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println(&quot;=== ESC + Brushless Test (ESP32-S3) ===&quot;);
+
+  // Setup PWM
+  ledcSetup(PWM_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
+  ledcAttachPin(ESC_PIN, PWM_CHANNEL);
+
+  // Arm ESC (IMPORTANT)
+  Serial.println(&quot;Arming ESC...&quot;);
+  ledcWrite(PWM_CHANNEL, MIN_THROTTLE);
+  delay(5000); // wait ESC beeps
+
+  Serial.println(&quot;ESC Ready ✅&quot;);
+}
+
+void loop() {
+
+  // Increase speed slowly
+  Serial.println(&quot;Increasing throttle...&quot;);
+  for (int duty = MIN_THROTTLE; duty &lt;= MAX_THROTTLE; duty += 50) {
+    ledcWrite(PWM_CHANNEL, duty);
+    Serial.println(duty);
+    delay(20);
+  }
+
+  delay(3000);
+
+  // Decrease speed slowly
+  Serial.println(&quot;Decreasing throttle...&quot;);
+  for (int duty = MAX_THROTTLE; duty &gt;= MIN_THROTTLE; duty -= 50) {
+    ledcWrite(PWM_CHANNEL, duty);
+    Serial.println(duty);
+    delay(20);
+  }
+
+  delay(3000);
+
+  // Stop motor
+  Serial.println(&quot;Stop...&quot;);
+  ledcWrite(PWM_CHANNEL, MIN_THROTTLE);
+  delay(5000);
+}`,
+
+      2: `// MPU6050 IMU Calibration Program
+
+#include &lt;Wire.h&gt;
+#include &lt;MPU6050.h&gt;
+
+MPU6050 mpu;
+
+void setup() {
+  Serial.begin(115200);
+
+  // ESP32-S3 I2C pins (can change if needed)
+  Wire.begin(4, 5); // SDA = GPIO4, SCL = GPIO5
+
+  Serial.println(&quot;--- កំពុងចាប់ផ្តើម MPU6050 ---&quot;);
+  mpu.initialize();
+  if (mpu.testConnection()) {
+    Serial.println(&quot;✓ MPU6050 Connected!&quot;);
+  } else {
+    Serial.println(&quot;❌ MPU6050 Not Found - Check Wiring!&quot;);
+  }
+}
+
+void loop() {
+  int ax, ay, az;
+  int gx, gy, gz;
+
+  mpu.getMotion6(&amp;ax, &amp;ay, &amp;az, &amp;gx, &amp;gy, &amp;gz);
+
+  int temp = mpu.getTemperature();
+  Serial.print(&quot;Accel X=&quot;); Serial.print(ax);
+  Serial.print(&quot; Y=&quot;); Serial.print(ay);
+  Serial.print(&quot; Z=&quot;); Serial.print(az);
+
+  Serial.print(&quot; || Gyro X=&quot;); Serial.print(gx);
+  Serial.print(&quot; Y=&quot;); Serial.print(gy);
+  Serial.print(&quot; Z=&quot;); Serial.print(gz);
+
+  Serial.print(&quot; || Temp=&quot;); Serial.print(temp);
+  Serial.println(&quot; C&quot;);
+
+  delay(1000);
+}`,
+
+      3: `// ESC Throttle Calibration via ESP32 PWM
+
+include &lt;ESP32Servo.h&gt;
+
+Servo ESC1, ESC2, ESC3, ESC4;
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println(&quot;=== ESC Calibration Mode ===&quot;);
+
+  // Attach ESC pins (change if needed)
+  ESC1.attach(12, 1000, 2000);
+  ESC2.attach(13, 1000, 2000);
+  ESC3.attach(14, 1000, 2000);
+  ESC4.attach(15, 1000, 2000);
+
+  // Step 1: Send MAX throttle
+  Serial.println(&quot;Send MAX throttle...&quot;);
+  ESC1.writeMicroseconds(2000);
+  ESC2.writeMicroseconds(2000);
+  ESC3.writeMicroseconds(2000);
+  ESC4.writeMicroseconds(2000);
+
+  delay(5000); // wait ESC beep (connect battery now)
+
+  // Step 2: Send MIN throttle
+  Serial.println(&quot;Send MIN throttle...&quot;);
+  ESC1.writeMicroseconds(1000);
+  ESC2.writeMicroseconds(1000);
+  ESC3.writeMicroseconds(1000);
+  ESC4.writeMicroseconds(1000);
+
+  delay(5000);
+
+  Serial.println(&quot;✅ Calibration Done!&quot;);
+}
+
+void loop() {
+  // Keep motors at minimum throttle
+  ESC1.writeMicroseconds(1000);
+  ESC2.writeMicroseconds(1000);
+  ESC3.writeMicroseconds(1000);
+  ESC4.writeMicroseconds(1000);
+}`,
+      4: `#include &lt;Wire.h&gt;
+#include &lt;Servo.h&gt;
+
+Servo ESC1, ESC2, ESC3, ESC4;
+
+int motor1 = 6;
+int motor2 = 9;
+int motor3 = 10;
+int motor4 = 11;
+
+double kp = 3.55;
+double ki = 0.005;
+double kd = 2.05;
+
+float PID, pwm1, pwm2, pwm3, pwm4, errorX, errorY, previous_errorX, previous_errorY;
+float pid_i = 0;
+float pid_p = 0;
+float pid_d = 0;
+float elapsedTime, time, timePrev;
+
+double throttle = 1300;
+float setpoint = 0;
+
+const int MPU_addr = 0x68;
+int16_t AcX, AcY, AcZ;
+int TotalX, TotalY;
+int AngleX, AngleY;
+
+// បានបន្ថែមមុខងារ setup() នេះដើម្បីឱ្យកូដពេញលេញអាចយកទៅប្រើបាន
+void setup() {
+  Serial.begin(9600);
+  
+  // ភ្ជាប់ ESC ទៅកាន់ជើងម៉ូទ័រនីមួយៗ
+  ESC1.attach(motor1, 1000, 2000);
+  ESC2.attach(motor2, 1000, 2000);
+  ESC3.attach(motor3, 1000, 2000);
+  ESC4.attach(motor4, 1000, 2000);
+  
+  SetupGyro(); // ហៅមុខងារកំណត់ហ្សីរ៉ូ
+}
+
+void loop() {
+  timePrev = time;
+  time = millis();
+  elapsedTime = (time - timePrev) / 1000;
+  ReadAcc();
+  
+  if (Serial.available() &gt; 0) {
+    String txt = Serial.readString();
+    txt.trim(); // បន្ថែមដើម្បីលុបចន្លោះទំនេរ ឬបន្ទាត់ថ្មី (បើមាន)
+    
+    if (txt == &quot;right&quot;) {
+      PIDX(-30);
+    }
+    else if (txt == &quot;left&quot;) {
+      PIDX(30);
+    }
+    else if (txt == &quot;front&quot;) {
+      PIDY(-30);
+    }
+    else if (txt == &quot;back&quot;) {
+      PIDY(30);
+    }
+    else if (txt == &quot;Stop&quot;) {
+      throttle = 1000;
+    }
+    else if (txt == &quot;Balance&quot;) {
+      PIDX(0);
+      PIDY(0);
+    }
+  }
+}
+
+void SetupGyro() {
+  Wire.begin();
+  Wire.beginTransmission(MPU_addr);
+  Wire.write(0x6B);
+  Wire.write(0);
+  Wire.endTransmission(true);
+}
+
+void ReadAcc() {
+  TotalX = 0; // កំណត់តម្លៃដើមឡើងវិញដើម្បីកុំឱ្យបូកថែមរហូត
+  TotalY = 0;
+  
+  for (int i = 0; i &lt; 100; i++) {
+    Wire.beginTransmission(MPU_addr);
+    Wire.write(0x3B);
+    Wire.endTransmission(false);
+    Wire.requestFrom(MPU_addr, 14, true);
+    
+    AcX = Wire.read() &lt;&lt; 8 | Wire.read();
+    AcY = Wire.read() &lt;&lt; 8 | Wire.read();
+    AcZ = Wire.read() &lt;&lt; 8 | Wire.read();
+    
+    AcX /= 100;
+    AcY /= 100;
+    TotalX += AcX;
+    TotalY += AcY;
+  }
+  
+  TotalX /= 100;
+  TotalY /= 100;
+
+  AngleX = map(TotalX, -60, 87, -90, 90);
+  AngleY = map(TotalY, -83, 80, -90, 90);
+}
+
+void PIDX(int setpoint) {
+  errorX = AngleX - setpoint;
+  pid_p = kp * errorX;
+  pid_i = pid_i + (ki * errorX); // កែសម្រួលពី Pid_i មក pid_i ដើម្បីកុំឱ្យខុសកូដ (Case-sensitive)
+  pid_d = kd * ((errorX - previous_errorX) / elapsedTime);
+  PID = pid_p + pid_i + pid_d;
+  
+  if (PID &lt; -1000) PID = -1000;
+  if (PID &gt; 1000)  PID = 1000;
+  
+  pwm1 = throttle + PID + 255;
+  pwm2 = throttle + PID + 600;
+  pwm3 = throttle - PID + 75;
+  pwm4 = throttle - PID + 60;
+  
+  if (pwm1 &lt; 1000) pwm1 = 1000;
+  if (pwm1 &gt; 2000) pwm1 = 2000;
+  if (pwm2 &lt; 1000) pwm2 = 1000;
+  if (pwm2 &gt; 2000) pwm2 = 2000;
+  if (pwm3 &lt; 1000) pwm3 = 1000;
+  if (pwm3 &gt; 2000) pwm3 = 2000;
+  if (pwm4 &lt; 1000) pwm4 = 1000;
+  if (pwm4 &gt; 2000) pwm4 = 2000;
+  
+  ESC1.writeMicroseconds(pwm1);
+  ESC2.writeMicroseconds(pwm2);
+  ESC3.writeMicroseconds(pwm3);
+  ESC4.writeMicroseconds(pwm4);
+  
+  previous_errorX = errorX;
+}
+
+void PIDY(int setpoint) {
+  errorY = AngleY - setpoint;
+  pid_p = kp * errorY;
+  pid_i = pid_i + (ki * errorY); // កែសម្រួលពី Pid_i មក pid_i
+  pid_d = kd * ((errorY - previous_errorY) / elapsedTime);
+  PID = pid_p + pid_i + pid_d;
+  
+  if (PID &lt; -1000) PID = -1000;
+  if (PID &gt; 1000)  PID = 1000;
+  
+  pwm1 = throttle - PID + 255;
+  pwm2 = throttle + PID + 600;
+  pwm3 = throttle + PID + 75;
+  pwm4 = throttle - PID + 60;
+  
+  if (pwm1 &lt; 1000) pwm1 = 1000;
+  if (pwm1 &gt; 2000) pwm1 = 2000;
+  if (pwm2 &lt; 1000) pwm2 = 1000;
+  if (pwm2 &gt; 2000) pwm2 = 2000;
+  if (pwm3 &lt; 1000) pwm3 = 1000;
+  if (pwm3 &gt; 2000) pwm3 = 2000;
+  if (pwm4 &lt; 1000) pwm4 = 1000;
+  if (pwm4 &gt; 2000) pwm4 = 2000;
+  
+  ESC1.writeMicroseconds(pwm1);
+  ESC2.writeMicroseconds(pwm2);
+  ESC3.writeMicroseconds(pwm3);
+  ESC4.writeMicroseconds(pwm4);
+  
+  previous_errorY = errorY;
+}`
+    };
+
+    function dbSwitchStage(num) {
+      // Toggle button active visual
+      for (let i = 1; i &lt;= 4; i++) {
+        const btn = document.getElementById(`btn-stg-${i}`);
+        if (i === num) {
+          btn.className = &quot;py-2 text-[11px] font-bold rounded-lg border border-cyan-500/40 bg-cyan-950/30 text-cyan-400 shadow&quot;;
+        } else {
+          btn.className = &quot;py-2 text-[11px] font-bold rounded-lg border border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200 transition&quot;;
+        }
+      }
+
+      const s = dbStages[num];
+      document.getElementById(&#x27;db-stage-title&#x27;).textContent = s.title;
+      document.getElementById(&#x27;db-stage-text&#x27;).textContent = s.text;
+      document.getElementById(&#x27;db-code-file-name&#x27;).textContent = s.file;
+      document.getElementById(&#x27;db-code-area&#x27;).value = dbStageCodes[num];
+      
+      const ul = document.getElementById(&#x27;db-stage-todo&#x27;);
+      ul.innerHTML = &#x27;&#x27;;
+      s.todo.forEach(item =&gt; {
+        const li = document.createElement(&#x27;li&#x27;);
+        li.textContent = item;
+        ul.appendChild(li);
+      });
+    }
+
+    // Copying code block
+    function dbCopyCode() {
+      const area = document.getElementById(&#x27;db-code-area&#x27;);
+      area.select();
+      document.execCommand(&#x27;copy&#x27;);
+      showToast(&#x27;📋 កូដត្រូវបានចម្លងទៅ Clipboard រួចរាល់!&#x27;, true);
+    }
+
+    // Terminal logging helper
+    function logToTerminal(msg) {
+      const term = document.getElementById(&#x27;serial-terminal&#x27;);
+      if (term) {
+        term.innerHTML += `[AUTO-MISSION]: ${msg}\n`;
+        term.scrollTop = term.scrollHeight;
+      }
+    }
+
+    // Simulating compilation and code upload
+    function simulateUpload() {
+      const term = document.getElementById(&#x27;serial-terminal&#x27;);
+      const status = document.getElementById(&#x27;upload-status&#x27;);
+      const btn = document.getElementById(&#x27;btn-upload-code&#x27;);
+      
+      btn.disabled = true;
+      status.textContent = &quot;Status: កំពុងបញ្ចូលកូដ...&quot;;
+      term.innerHTML = &quot;[SYSTEM]: ចាប់ផ្តើមចងក្រងកូដ (Compiling code)...\n&quot;;
+
+      setTimeout(() =&gt; {
+        term.innerHTML += &quot;[SYSTEM]: កំពុងភ្ជាប់ទៅកាន់ ESP32 (COM3, Baud 115200)...\n&quot;;
+      }, 800);
+
+      setTimeout(() =&gt; {
+        term.innerHTML += &quot;[SYSTEM]: កំពុងសរសេរកូដចូល Flash memory (100%)...\n&quot;;
+      }, 1800);
+
+      setTimeout(() =&gt; {
+        term.innerHTML += &quot;[SUCCESS]: បញ្ចូលកូដជោគជ័យ! បើកដំណើរការប្រព័ន្ធឡើងវិញ...\n&quot;;
+        term.innerHTML += &quot;[ESP32]: RUPP B402 IMU &amp; PID Active. Frequency: 250Hz\n&quot;;
+        status.textContent = &quot;Status: បញ្ចូលកូដជោគជ័យ&quot;;
+        btn.disabled = false;
+        showToast(&#x27;🚀 ការបញ្ចូលកូដទៅកាន់ ESP32 ជោគជ័យ!&#x27;, true);
+      }, 2800);
+    }
+
+    // -------------------------------------------------------------
+    // THREE.JS 3D FLIGHT SIMULATOR (HIGH VISIBILITY REDESIGN)
+    // -------------------------------------------------------------
+    let scene, camera, renderer, drone, propellers = [], axesGroup;
+    let initialAlt = 0.1; // Starts on ground
+    let showAxes = true; // Enabled by default to show MPU6050 axes
+    let takeoffCompleted = false; // Flag for auto-takeoff completion
+
+    // Autonomous Mission Variables
+    let autoMissionActive = false;
+    let autoMissionState = &#x27;NONE&#x27;; // &#x27;TAKEOFF&#x27;, &#x27;FORWARD&#x27;, &#x27;HOVER_FORWARD&#x27;, &#x27;RETURN&#x27;, &#x27;HOVER_START&#x27;, &#x27;LANDING&#x27;
+    let missionTimer = 0;
+    let startX = 0, startZ = 0;
+    
+    const droneState = {
+      x: 0, y: initialAlt, z: 0,
+      roll: 0, pitch: 0, yaw: 0,
+      targetRoll: 0, targetPitch: 0, targetYaw: 0, targetHeight: initialAlt,
+      isArmed: false,
+      battery: 12.6,
+      motors: [0, 0, 0, 0] // M1, M2, M3, M4 powers
+    };
+
+    // Keyboard state listener
+    const keysPressed = {};
+    window.addEventListener(&#x27;keydown&#x27;, (e) =&gt; {
+      keysPressed[e.key] = true;
+    });
+    window.addEventListener(&#x27;keyup&#x27;, (e) =&gt; {
+      keysPressed[e.key] = false;
+    });
+
+    // Control continuous press state
+    const activeControls = {
+      rollLeft: false, rollRight: false,
+      pitchForward: false, pitchBackward: false,
+      yawLeft: false, yawRight: false,
+      throttleUp: false, throttleDown: false
+    };
+
+    // Handlers for touch and mouse
+    function startControl(action) {
+      if (autoMissionActive) {
+        showToast(&#x27;⚠️ បេសកកម្មស្វ័យប្រវត្តកំពុងដំណើរការ! មិនអាចបញ្ជាដោយដៃបានទេ&#x27;, false);
+        return;
+      }
+      if (droneState.isArmed &amp;&amp; !takeoffCompleted) {
+        showToast(&#x27;⚠️ សូមរង់ចាំឱ្យដ្រូនហោះឡើងដល់ ២ ម៉ែត្រសិន!&#x27;, false);
+        return;
+      }
+      activeControls[action] = true;
+    }
+
+    function stopControl(action) {
+      activeControls[action] = false;
+    }
+
+    // Global release fallback
+    window.addEventListener(&#x27;mouseup&#x27;, () =&gt; clearAllActiveControls());
+    window.addEventListener(&#x27;touchend&#x27;, () =&gt; clearAllActiveControls());
+    
+    function clearAllActiveControls() {
+      for (let act in activeControls) {
+        activeControls[act] = false;
+      }
+    }
+
+    // Helper to generate text canvas texture for X, Y, Z axes labels
+    function createAxisLabelTexture(text, color) {
+      const canvas = document.createElement(&#x27;canvas&#x27;);
+      canvas.width = 64;
+      canvas.height = 64;
+      const ctx = canvas.getContext(&#x27;2d&#x27;);
+      ctx.fillStyle = &#x27;rgba(0,0,0,0)&#x27;; // Transparent background
+      ctx.fillRect(0, 0, 64, 64);
+      ctx.fillStyle = color;
+      ctx.font = &#x27;bold 44px Inter, sans-serif&#x27;;
+      ctx.textAlign = &#x27;center&#x27;;
+      ctx.textBaseline = &#x27;middle&#x27;;
+      ctx.fillText(text, 32, 32);
+      return new THREE.CanvasTexture(canvas);
+    }
+
+    // Helper to construct a realistic 2-blade black propeller
+    // Also takes parameter isCW to flip the physical aerodynamic pitch angles!
+    function create2BladePropeller(isCW) {
+      const propGroup = new THREE.Group();
+      
+      // Central metal spinner nut
+      const hubGeom = new THREE.CylinderGeometry(0.04, 0.04, 0.08, 8);
+      const hubMat = new THREE.MeshStandardMaterial({ color: 0xd1d5db, metalness: 0.9, roughness: 0.1 });
+      const hub = new THREE.Mesh(hubGeom, hubMat);
+      hub.position.y = 0.04;
+      propGroup.add(hub);
+
+      // Matte black aerodynamic 2 blades
+      const bladeGeom = new THREE.BoxGeometry(0.75, 0.015, 0.06);
+      const bladeMat = new THREE.MeshStandardMaterial({ 
+        color: 0x111827, // Dark black carbon style propeller
+        roughness: 0.4, 
+        metalness: 0.5,
+        transparent: true,
+        opacity: 0.95
+      });
+
+      // Flips the physical blade twist pitch depending on CW/CCW direction!
+      const pitchAngle = isCW ? -0.12 : 0.12;
+
+      const blade1 = new THREE.Mesh(bladeGeom, bladeMat);
+      blade1.position.x = 0.35;
+      blade1.rotation.z = pitchAngle; 
+      propGroup.add(blade1);
+
+      const blade2 = new THREE.Mesh(bladeGeom, bladeMat);
+      blade2.position.x = -0.35;
+      blade2.rotation.z = -pitchAngle; 
+      propGroup.add(blade2);
+
+      // Spinning motion blur disc (Fades in at high velocity)
+      const discGeom = new THREE.CylinderGeometry(0.76, 0.76, 0.005, 16);
+      const discMat = new THREE.MeshBasicMaterial({
+        color: 0x475569,
+        transparent: true,
+        opacity: 0.0,
+        side: THREE.DoubleSide
+      });
+      const blurDisc = new THREE.Mesh(discGeom, discMat);
+      blurDisc.position.y = 0.04;
+      propGroup.add(blurDisc);
+
+      return {
+        group: propGroup,
+        blades: [blade1, blade2],
+        disc: blurDisc,
+        isCW: isCW
+      };
+    }
+
+    function onResizeCanvas() {
+      const container = document.getElementById(&#x27;threejs-container&#x27;);
+      if (!container) return;
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      
+      if (camera &amp;&amp; renderer) {
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+      }
+    }
+
+    function init3DSpace() {
+      const container = document.getElementById(&#x27;threejs-container&#x27;);
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      scene = new THREE.Scene();
+      // Premium Cyber Cosmic Blue Space color scheme background
+      scene.background = new THREE.Color(0x030f26); 
+      // Volumetric fog using deep blue to fade out coordinates and enhance sci-fi lighting
+      scene.fog = new THREE.FogExp2(0x030f26, 0.045);
+
+      // Camera
+      camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+      camera.position.set(5, 6, 12);
+      camera.lookAt(0, 1.5, 0);
+
+      // Renderer
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(width, height);
+      renderer.shadowMap.enabled = true;
+      container.appendChild(renderer.domElement);
+
+      // Realistic Cyberpunk Blue-inspired lighting
+      const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
+      scene.add(ambientLight);
+
+      // Glowing Cyan-Blue Key Light
+      const dirLight = new THREE.DirectionalLight(0x00f0ff, 1.8);
+      dirLight.position.set(5, 12, 5);
+      scene.add(dirLight);
+
+      // Vibrant Purple/Indigo fill light
+      const secondaryLight = new THREE.DirectionalLight(0x6366f1, 0.9);
+      secondaryLight.position.set(-5, 8, -5);
+      scene.add(secondaryLight);
+
+      // Premium glowing Cyan and Navy Grid
+      const grid = new THREE.GridHelper(50, 50, 0x00d2ff, 0x0a1e3f);
+      grid.position.y = 0;
+      scene.add(grid);
+
+      // Cyber Holographic Landing Pad directly below starting point
+      const landingRingGeom = new THREE.RingGeometry(1.5, 1.6, 32);
+      const landingRingMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, side: THREE.DoubleSide, transparent: true, opacity: 0.6 });
+      const landingRing = new THREE.Mesh(landingRingGeom, landingRingMat);
+      landingRing.rotation.x = Math.PI / 2;
+      landingRing.position.y = 0.01;
+      scene.add(landingRing);
+
+      const landingInnerRingGeom = new THREE.RingGeometry(0.3, 0.4, 32);
+      const landingInnerRingMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, side: THREE.DoubleSide, transparent: true, opacity: 0.4 });
+      const landingInnerRing = new THREE.Mesh(landingInnerRingGeom, landingInnerRingMat);
+      landingInnerRing.rotation.x = Math.PI / 2;
+      landingInnerRing.position.y = 0.01;
+      scene.add(landingInnerRing);
+
+      // Starfield Particle System Generator - Deep Blue &amp; Aqua shades
+      const starCount = 800;
+      const starGeometry = new THREE.BufferGeometry();
+      const starPositions = new Float32Array(starCount * 3);
+      const starColors = new Float32Array(starCount * 3);
+
+      for(let i = 0; i &lt; starCount * 3; i += 3) {
+        const radius = 22 + Math.random() * 25;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos((Math.random() * 2) - 1);
+        
+        starPositions[i] = radius * Math.sin(phi) * Math.cos(theta);
+        starPositions[i+1] = Math.max(0.5, radius * Math.sin(phi) * Math.sin(theta)); // Keep stars above ground
+        starPositions[i+2] = radius * Math.cos(phi);
+        
+        // Cyber Blue palette stars
+        const randVal = Math.random();
+        if (randVal &lt; 0.4) { // Bright Ice Cyan
+          starColors[i] = 0.0; starColors[i+1] = 0.94; starColors[i+2] = 1.0;
+        } else if (randVal &lt; 0.75) { // Electric Blue
+          starColors[i] = 0.11; starColors[i+1] = 0.45; starColors[i+2] = 1.0;
+        } else { // Sky White-Blue
+          starColors[i] = 0.85; starColors[i+1] = 0.92; starColors[i+2] = 1.0;
+        }
+      }
+
+      starGeometry.setAttribute(&#x27;position&#x27;, new THREE.BufferAttribute(starPositions, 3));
+      starGeometry.setAttribute(&#x27;color&#x27;, new THREE.BufferAttribute(starColors, 3));
+      
+      const starMaterial = new THREE.PointsMaterial({
+        size: 0.16,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.9
+      });
+
+      const stars = new THREE.Points(starGeometry, starMaterial);
+      scene.add(stars);
+
+      // Holographic Neon Turquoise Beacons
+      const beaconGeom = new THREE.CylinderGeometry(0.04, 0.04, 10, 4, 1, true);
+      const beaconMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.28 });
+      const beaconPositions = [
+        { x: -14, z: -14 }, { x: 14, z: -14 },
+        { x: -14, z: 14 }, { x: 14, z: 14 },
+        { x: 0, z: -16 }, { x: 0, z: 16 }
+      ];
+
+      beaconPositions.forEach(pos =&gt; {
+        const tower = new THREE.Mesh(beaconGeom, beaconMat);
+        tower.position.set(pos.x, 5, pos.z);
+        scene.add(tower);
+
+        // Neon Cyan glowing beacon cap
+        const capGeom = new THREE.SphereGeometry(0.18, 8, 8);
+        const capMat = new THREE.MeshStandardMaterial({ 
+          color: 0x00f0ff, 
+          emissive: 0x00d2ff, 
+          emissiveIntensity: 1.6 
+        });
+        const cap = new THREE.Mesh(capGeom, capMat);
+        cap.position.set(pos.x, 10, pos.z);
+        scene.add(cap);
+      });
+
+      // Ambient Hologram Cyber Ring floating high in the background
+      const ringGeom = new THREE.TorusGeometry(8, 0.08, 8, 48);
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, wireframe: true, transparent: true, opacity: 0.25 });
+      const floatingRing = new THREE.Mesh(ringGeom, ringMat);
+      floatingRing.rotation.x = Math.PI / 2;
+      floatingRing.position.set(0, 15, 0);
+      scene.add(floatingRing);
+
+      drone = new THREE.Group();
+      
+      // DESIGN: GLOSSY SAFETY ORANGE, SPORTY WHITE &amp; RED METALLIC STANDOFFS
+      const orangePlateMat = new THREE.MeshStandardMaterial({ 
+        color: 0xff5500, // Highly visible glossy safety orange plates
+        roughness: 0.2, 
+        metalness: 0.6 
+      });
+
+      const whiteArmMat = new THREE.MeshStandardMaterial({ 
+        color: 0xf1f5f9, // Pure glossy sporty white arms
+        roughness: 0.2, 
+        metalness: 0.3 
+      });
+
+      // Red anodized aluminum metallic standoffs (បង្គោលតួពណ៌ក្រហមចាំង)
+      const redStandoffMat = new THREE.MeshStandardMaterial({ 
+        color: 0xef4444, 
+        roughness: 0.15, 
+        metalness: 0.9 
+      });
+
+      // Brushed coreless micro motors (ម៉ូទ័រមានជក់ពណ៌ប្រាក់)
+      const brushedMotorMat = new THREE.MeshStandardMaterial({ 
+        color: 0xdddddd, 
+        roughness: 0.1, 
+        metalness: 0.95 
+      });
+
+      const motorSleeveMat = new THREE.MeshStandardMaterial({ 
+        color: 0x18181b, // Matte black sleeve ring to hold the brushed motor
+        roughness: 0.7 
+      });
+
+      const bottomCapMat = new THREE.MeshStandardMaterial({ 
+        color: 0x111111, // Plastic bottom endcap for wired brushed coreless motor
+        roughness: 0.6 
+      });
+
+      const bluePCBMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.4 }); // Royal Blue MPU6050
+      const yellowCapMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.2 });
+      const solderMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, metalness: 0.9 });
+
+      // DOUBLE DECK PLATES (Lower &amp; Upper) - Safety Orange Color
+      const lowerPlateGeom = new THREE.BoxGeometry(1.2, 0.04, 1.2);
+      const lowerPlate = new THREE.Mesh(lowerPlateGeom, orangePlateMat);
+      lowerPlate.position.y = 0.05;
+      drone.add(lowerPlate);
+
+      const upperPlateGeom = new THREE.BoxGeometry(0.9, 0.04, 0.9);
+      const upperPlate = new THREE.Mesh(upperPlateGeom, orangePlateMat);
+      upperPlate.position.y = 0.25;
+      drone.add(upperPlate);
+
+      // 4 Anodized Red Corner Pillars/Standoffs
+      const standoffGeom = new THREE.CylinderGeometry(0.025, 0.025, 0.16, 8);
+      const standoffsOffsets = [
+        { x: 0.3, z: 0.3 }, { x: -0.3, z: 0.3 },
+        { x: 0.3, z: -0.3 }, { x: -0.3, z: -0.3 }
+      ];
+      standoffsOffsets.forEach(pos =&gt; {
+        const standoff = new THREE.Mesh(standoffGeom, redStandoffMat);
+        standoff.position.set(pos.x, 0.15, pos.z);
+        drone.add(standoff);
+      });
+
+      // MPU6050 Board setup
+      const mpuGroup = new THREE.Group();
+      const pcbGeom = new THREE.BoxGeometry(0.35, 0.02, 0.35);
+      const pcb = new THREE.Mesh(pcbGeom, bluePCBMat);
+      mpuGroup.add(pcb);
+
+      // MPU6050 IC chip
+      const chipGeom = new THREE.BoxGeometry(0.12, 0.025, 0.12);
+      const chip = new THREE.Mesh(chipGeom, motorSleeveMat);
+      chip.position.set(0, 0.015, 0.02);
+      mpuGroup.add(chip);
+
+      // Yellow capacitor
+      const capGeom = new THREE.BoxGeometry(0.04, 0.03, 0.08);
+      const cap = new THREE.Mesh(capGeom, yellowCapMat);
+      cap.position.set(0.1, 0.015, 0.02);
+      mpuGroup.add(cap);
+
+      // Row of header pins
+      const pinsGroup = new THREE.Group();
+      const pinGeom = new THREE.CylinderGeometry(0.008, 0.008, 0.08, 4);
+      pinGeom.rotateX(Math.PI / 2);
+      for (let i = -4; i &lt;= 3; i++) {
+        const pin = new THREE.Mesh(pinGeom, solderMat);
+        pin.position.set(-0.15, 0.02, i * 0.04);
+        pinsGroup.add(pin);
+      }
+      mpuGroup.add(pinsGroup);
+
+      mpuGroup.position.set(0, 0.28, 0);
+      drone.add(mpuGroup);
+
+      // 4 Diagonal Sporty White Arms
+      const armGeom = new THREE.BoxGeometry(0.12, 0.06, 2.2);
+      const arm1 = new THREE.Mesh(armGeom, whiteArmMat);
+      arm1.rotation.y = Math.PI / 4;
+      arm1.position.y = 0.08;
+      drone.add(arm1);
+
+      const arm2 = new THREE.Mesh(armGeom, whiteArmMat);
+      arm2.rotation.y = -Math.PI / 4;
+      arm2.position.y = 0.08;
+      drone.add(arm2);
+
+      // Brushed Coreless Cylindrical Motors
+      const motorSleeveGeom = new THREE.CylinderGeometry(0.08, 0.08, 0.12, 12); // Sleeve mount
+      const motorBaseGeom = new THREE.CylinderGeometry(0.06, 0.06, 0.32, 12);   // Coreless silver cylinder body
+      const bottomCapGeom = new THREE.CylinderGeometry(0.06, 0.06, 0.04, 12);   // Bottom plastic cap
+      const legPegGeom = new THREE.CylinderGeometry(0.025, 0.02, 0.35, 8);      // Landing peg
+      
+      const motorOffsets = [
+        { x: 0.77, z: 0.77, isCW: true },   // FR (M1) - CW
+        { x: -0.77, z: 0.77, isCW: false },  // FL (M2) - CCW
+        { x: 0.77, z: -0.77, isCW: false }, // BR (M3) - CCW
+        { x: -0.77, z: -0.77, isCW: true }  // BL (M4) - CW
+      ];
+
+      propellers = [];
+
+      motorOffsets.forEach((offset) =&gt; {
+        // Black mounting sleeve on the carbon arm tip
+        const sleeve = new THREE.Mesh(motorSleeveGeom, motorSleeveMat);
+        sleeve.position.set(offset.x, 0.15, offset.z);
+        drone.add(sleeve);
+
+        // Shiny silver brushed coreless motor body
+        const motor = new THREE.Mesh(motorBaseGeom, brushedMotorMat);
+        motor.position.set(offset.x, 0.22, offset.z);
+        drone.add(motor);
+
+        // Plastic bottom endcap of the coreless motor
+        const cap = new THREE.Mesh(bottomCapGeom, bottomCapMat);
+        cap.position.set(offset.x, 0.06, offset.z);
+        drone.add(cap);
+
+        // Dual colored wires (red/blue or black/white) trailing out of the cap
+        const wireColor = offset.isCW ? 0xef4444 : 0x3b82f6; // Red for CW, Blue for CCW
+        const wireGeom = new THREE.CylinderGeometry(0.01, 0.01, 0.1, 4);
+        const wireMat = new THREE.MeshBasicMaterial({ color: wireColor });
+        const wire1 = new THREE.Mesh(wireGeom, wireMat);
+        wire1.position.set(offset.x - 0.02, 0.01, offset.z);
+        wire1.rotation.z = 0.25;
+        drone.add(wire1);
+
+        const pegLeg = new THREE.Mesh(legPegGeom, whiteArmMat);
+        pegLeg.position.set(offset.x, -0.1, offset.z);
+        drone.add(pegLeg);
+
+        // Pass offset.isCW to flip physical propeller blade pitch angles!
+        const propInfo = create2BladePropeller(offset.isCW);
+        propInfo.group.position.set(offset.x, 0.38, offset.z); // Slightly higher propeller shaft
+        drone.add(propInfo.group);
+        propellers.push(propInfo);
+      });
+
+      scene.add(drone);
+      drone.position.set(0, droneState.y, 0);
+
+      // Coordinate axes helper
+      axesGroup = new THREE.Group();
+      const arrowMatRed = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+      const arrowMatGreen = new THREE.MeshBasicMaterial({ color: 0x22c55e });
+      const arrowMatBlue = new THREE.MeshBasicMaterial({ color: 0x3b82f6 });
+
+      const cylinderGeom = new THREE.CylinderGeometry(0.015, 0.015, 1.8, 8);
+      const coneGeom = new THREE.ConeGeometry(0.06, 0.15, 8);
+
+      const xArrow = new THREE.Group();
+      const xCyl = new THREE.Mesh(cylinderGeom, arrowMatRed);
+      xCyl.rotation.z = -Math.PI / 2;
+      xCyl.position.x = 0.9;
+      const xCone = new THREE.Mesh(coneGeom, arrowMatRed);
+      xCone.rotation.z = -Math.PI / 2;
+      xCone.position.x = 1.8;
+      xArrow.add(xCyl, xCone);
+
+      const labelXTex = createAxisLabelTexture(&#x27;X&#x27;, &#x27;#ef4444&#x27;);
+      const labelXMat = new THREE.SpriteMaterial({ map: labelXTex });
+      const labelXSprite = new THREE.Sprite(labelXMat);
+      labelXSprite.position.set(2.1, 0, 0);
+      labelXSprite.scale.set(0.4, 0.4, 1);
+      xArrow.add(labelXSprite);
+
+      const yArrow = new THREE.Group();
+      const yCyl = new THREE.Mesh(cylinderGeom, arrowMatGreen);
+      yCyl.rotation.x = -Math.PI / 2;
+      yCyl.position.z = -0.9;
+      const yCone = new THREE.Mesh(coneGeom, arrowMatGreen);
+      yCone.rotation.x = -Math.PI / 2;
+      yCone.position.z = -1.8;
+      yArrow.add(yCyl, yCone);
+
+      const labelYTex = createAxisLabelTexture(&#x27;Y&#x27;, &#x27;#22c55e&#x27;);
+      const labelYMat = new THREE.SpriteMaterial({ map: labelYTex });
+      const labelYSprite = new THREE.Sprite(labelYMat);
+      labelYSprite.position.set(0, 0, -2.1);
+      labelYSprite.scale.set(0.4, 0.4, 1);
+      yArrow.add(labelYSprite);
+
+      const zArrow = new THREE.Group();
+      const zCyl = new THREE.Mesh(cylinderGeom, arrowMatBlue);
+      zCyl.position.y = 0.9;
+      const zCone = new THREE.Mesh(coneGeom, arrowMatBlue);
+      zCone.position.y = 1.8;
+      zArrow.add(zCyl, zCone);
+
+      const labelZTex = createAxisLabelTexture(&#x27;Z&#x27;, &#x27;#3b82f6&#x27;);
+      const labelZMat = new THREE.SpriteMaterial({ map: labelZTex });
+      const labelZSprite = new THREE.Sprite(labelZMat);
+      labelZSprite.position.set(0, 2.1, 0);
+      labelZSprite.scale.set(0.4, 0.4, 1);
+      zArrow.add(labelZSprite);
+
+      axesGroup.add(xArrow, yArrow, zArrow);
+      axesGroup.position.set(0, 0.3, 0);
+      drone.add(axesGroup);
+
+      axesGroup.visible = showAxes;
+
+      window.addEventListener(&#x27;resize&#x27;, onResizeCanvas);
+      
+      animateLoop();
+    }
+
+    function toggleAxesHelper() {
+      showAxes = !showAxes;
+      if (axesGroup) {
+        axesGroup.visible = showAxes;
+        showToast(showAxes ? &#x27;📊 បង្ហាញអ័ក្សកូអរដោនេ (Axes Visible)&#x27; : &#x27;បិទការបង្ហាញអ័ក្សកូអរដោនេ (Axes Hidden)&#x27;, true);
+      }
+    }
+
+    function toggleArmDrone() {
+      const btn = document.getElementById(&#x27;btn-arm&#x27;);
+      const text = document.getElementById(&#x27;arm-text&#x27;);
+      
+      droneState.isArmed = !droneState.isArmed;
+      
+      if (droneState.isArmed) {
+        btn.className = &quot;bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold px-4 py-1.5 rounded-lg shadow-lg shadow-emerald-900/30 transition duration-150 flex items-center gap-2&quot;;
+        text.textContent = &quot;Disarm Drone (ឈប់)&quot;;
+        takeoffCompleted = false; // Reset manual control trigger
+        
+        // Setup state variables for the autonomous mission
+        autoMissionActive = true;
+        autoMissionState = &#x27;TAKEOFF&#x27;;
+        startX = droneState.x;
+        startZ = droneState.z;
+        droneState.targetHeight = 2.0; // Auto-takeoff target altitude (2.0 meters)
+        
+        // Reset PID internal states to prevent old error windup
+        droneState.yIntegral = 0;
+        droneState.yPrevError = 0;
+        droneState.pitchIntegral = 0;
+        droneState.pitchPrevError = 0;
+        droneState.rollIntegral = 0;
+        droneState.rollPrevError = 0;
+        
+        showToast(&#x27;🚀 ចាប់ផ្ដើមបេសកកម្មស្វ័យប្រវត្ត៖ ហោះឡើង ២ម -&gt; ទៅមុខ ៦ម -&gt; ហោះថយក្រោយ -&gt; ចុះចត!&#x27;, true);
+        logToTerminal(&quot;ចាប់ផ្ដើមបេសកកម្មហោះហើរស្វ័យប្រវត្ត...&quot;);
+        logToTerminal(&quot;ដំណាក់កាលទី១៖ ហោះឡើងត្រង់កម្ពស់ ២.០ ម៉ែត្រ&quot;);
+      } else {
+        btn.className = &quot;bg-red-600 hover:bg-red-500 active:scale-95 text-white font-bold px-4 py-1.5 rounded-lg shadow-lg shadow-red-900/30 transition duration-150 flex items-center gap-2&quot;;
+        text.textContent = &quot;Armed Drone (ហោះ)&quot;;
+        showToast(&#x27;🔒 ដ្រូនស្ថិតក្នុងស្ថានភាពចាក់សោ (Disarmed)&#x27;, false);
+        droneState.targetHeight = 0.1; // Landing target altitude
+        takeoffCompleted = false;
+        
+        autoMissionActive = false;
+        autoMissionState = &#x27;NONE&#x27;;
+        logToTerminal(&quot;បេសកកម្មត្រូវបានលុបចោល ឬបញ្ឈប់ដោយជោគជ័យ។&quot;);
+      }
+    }
+
+    function resetDrone() {
+      droneState.x = 0;
+      droneState.y = initialAlt;
+      droneState.z = 0;
+      droneState.roll = 0;
+      droneState.pitch = 0;
+      droneState.yaw = 0;
+      droneState.targetRoll = 0;
+      droneState.targetPitch = 0;
+      droneState.targetYaw = 0;
+      droneState.targetHeight = initialAlt;
+      
+      // Reset physical velocities
+      droneState.yVelocity = 0;
+      droneState.yIntegral = 0;
+      droneState.yPrevError = 0;
+      droneState.pitchVelocity = 0;
+      droneState.pitchIntegral = 0;
+      droneState.pitchPrevError = 0;
+      droneState.rollVelocity = 0;
+      droneState.rollIntegral = 0;
+      droneState.rollPrevError = 0;
+      
+      takeoffCompleted = false;
+      autoMissionActive = false;
+      autoMissionState = &#x27;NONE&#x27;;
+      
+      drone.position.set(0, initialAlt, 0);
+      drone.rotation.set(0, 0, 0);
+      
+      showToast(&#x27;🔄 កំណត់ទីតាំង និងមុំហោះហើររបស់ដ្រូនឡើងវិញជោគជ័យ!&#x27;, true);
+    }
+
+    function animateLoop() {
+      requestAnimationFrame(animateLoop);
+
+      const changeRate = 0.015;
+      
+      // Tracking active control action for live overlay
+      let activeAction = &quot;រក្សាលំនឹង (HOVER / STABLE)&quot;;
+      let isUserControlling = false;
+
+      // Autonomous Flight Sequence State Machine
+      if (droneState.isArmed &amp;&amp; autoMissionActive) {
+        isUserControlling = true;
+        switch (autoMissionState) {
+          case &#x27;TAKEOFF&#x27;:
+            activeAction = &quot;បេសកកម្ម៖ ហោះឡើង (TAKEOFF)&quot;;
+            droneState.targetHeight = 2.0;
+            droneState.targetPitch = 0;
+            droneState.targetRoll = 0;
+            
+            if (droneState.y &gt;= 1.95) {
+              startX = droneState.x;
+              startZ = droneState.z;
+              autoMissionState = &#x27;FORWARD&#x27;;
+              showToast(&#x27;🚀 ដ្រូនដល់កម្ពស់ ២ម៉ែត្រ! ចាប់ផ្ដើមហោះទៅមុខ ៦ម៉ែត្រ...&#x27;, true);
+              logToTerminal(&quot;បានដល់កម្ពស់ ២.០ ម៉ែត្រ។ ចាប់ផ្ដើមហោះទៅមុខ ៦.០ ម៉ែត្រ (Pitch = -0.15rad)&quot;);
+            }
+            break;
+            
+          case &#x27;FORWARD&#x27;:
+            activeAction = &quot;បេសកកម្ម៖ ទៅមុខ ៦ម (FORWARD)&quot;;
+            // Pitch forward to move along local forward vector
+            droneState.targetPitch = -0.15;
+            droneState.targetRoll = 0;
+            
+            // Calculate absolute distance moved along the Z axis from original startZ
+            let distForward = Math.abs(droneState.z - startZ);
+            if (distForward &gt;= 6.0) { // Extended by 3 additional meters (3m -&gt; 6m)
+              droneState.targetPitch = 0; // Level back up
+              autoMissionState = &#x27;HOVER_FORWARD&#x27;;
+              missionTimer = Date.now();
+              showToast(&#x27;📍 ហោះបាន ៦ម៉ែត្រហើយ! ផ្អាកលំនឹង ១.៥វិនាទី...&#x27;, true);
+              logToTerminal(&quot;បានហោះទៅមុខចម្ងាយ ៦.០ ម៉ែត្រ។ កំពុងផ្អាករក្សាលំនឹង...&quot;);
+            }
+            break;
+            
+          case &#x27;HOVER_FORWARD&#x27;:
+            activeAction = &quot;បេសកកម្ម៖ ផ្អាកលំនឹង (WAYPOINT HOVER)&quot;;
+            droneState.targetPitch = 0;
+            droneState.targetRoll = 0;
+            // Wait 1.5 seconds at the waypoint
+            if (Date.now() - missionTimer &gt; 1500) {
+              autoMissionState = &#x27;RETURN&#x27;;
+              showToast(&#x27;🔄 កំពុងហោះត្រលប់មកកាន់កន្លែងដើមវិញ...&#x27;, true);
+              logToTerminal(&quot;ចាប់ផ្ដើមហោះត្រលប់មកចំណុចចាប់ផ្ដើមវិញ (Pitch = 0.12rad)&quot;);
+            }
+            break;
+            
+          case &#x27;RETURN&#x27;:
+            activeAction = &quot;បេសកកម្ម៖ ហោះត្រលប់ក្រោយ (RETURN)&quot;;
+            // Pitch backward to fly back towards startZ
+            droneState.targetPitch = 0.12;
+            droneState.targetRoll = 0;
+            
+            // Once we are back near the takeoff origin on Z axis
+            if (droneState.z &gt;= startZ - 0.08) {
+              droneState.targetPitch = 0; // Level back up
+              autoMissionState = &#x27;HOVER_START&#x27;;
+              missionTimer = Date.now();
+              showToast(&#x27;🏠 មកដល់កន្លែងដើមវិញហើយ! ផ្អាកលំនឹង ១.៥វិនាទីមុនចុះចត...&#x27;, true);
+              logToTerminal(&quot;បានមកដល់ចំណុចចាប់ផ្ដើមវិញដោយសុវត្ថិភាព។&quot;);
+            }
+            break;
+            
+          case &#x27;HOVER_START&#x27;:
+            activeAction = &quot;បេសកកម្ម៖ ផ្អាកលំនឹងរៀបចុះចត (HOME HOVER)&quot;;
+            droneState.targetPitch = 0;
+            droneState.targetRoll = 0;
+            // Wait 1.5 seconds at the home base before landing
+            if (Date.now() - missionTimer &gt; 1500) {
+              autoMissionState = &#x27;LANDING&#x27;;
+              showToast(&#x27;⬇️ ចាប់ផ្ដើមចុះចតស្វ័យប្រវត្ត...&#x27;, true);
+              logToTerminal(&quot;កំពុងចុះចតស្វ័យប្រវត្ត...&quot;);
+            }
+            break;
+            
+          case &#x27;LANDING&#x27;:
+            activeAction = &quot;បេសកកម្ម៖ ចុះចត (LANDING)&quot;;
+            droneState.targetHeight = 0.1;
+            droneState.targetPitch = 0;
+            droneState.targetRoll = 0;
+            
+            // Once safely back on ground, perform disarm Sequence
+            if (droneState.y &lt;= 0.15) {
+              autoMissionActive = false;
+              autoMissionState = &#x27;NONE&#x27;;
+              logToTerminal(&quot;បានចុះចតដោយជោគជ័យ។ ប្រព័ន្ធត្រូវបានចាក់សោ (Disarmed)។&quot;);
+              toggleArmDrone(); // Turn off Armed State
+            }
+            break;
+        }
+      }
+
+      // Manual controls (Only enabled if autonomous mission is NOT active)
+      if (!autoMissionActive) {
+        if (droneState.isArmed) {
+          if (!takeoffCompleted) {
+            droneState.targetHeight = 2.0;
+            droneState.targetRoll = 0;
+            droneState.targetPitch = 0;
+            
+            if (droneState.y &gt;= 1.95) {
+              takeoffCompleted = true;
+              showToast(&#x27;✨ ហោះឡើងដល់កម្ពស់ ២ម៉ែត្ររួចរាល់! ឥឡូវអ្នកអាចបញ្ជាបានសេរី។&#x27;, true);
+            }
+          } else {
+            // Manual throttle control enabled after 2m takeoff
+            if (activeControls.throttleUp || keysPressed[&#x27;Shift&#x27;]) {
+              activeAction = &quot;បង្កើនកម្ពស់ (THROTTLE ▲)&quot;;
+              isUserControlling = true;
+              droneState.targetHeight = Math.min(10.0, droneState.targetHeight + 0.06);
+            } else if (activeControls.throttleDown || keysPressed[&#x27;Control&#x27;] || keysPressed[&#x27; &#x27;]) {
+              activeAction = &quot;បន្ថយកម្ពស់ (THROTTLE ▼)&quot;;
+              isUserControlling = true;
+              droneState.targetHeight = Math.max(0.2, droneState.targetHeight - 0.06);
+            }
+          }
+        }
+
+        // Roll, Pitch and Yaw control allowed when airborne
+        if (!droneState.isArmed || takeoffCompleted) {
+          // Roll
+          if (activeControls.rollLeft || keysPressed[&#x27;ArrowLeft&#x27;] || keysPressed[&#x27;a&#x27;] || keysPressed[&#x27;A&#x27;]) {
+            activeAction = &quot;ផ្អៀងឆ្វេង (ROLL / Axis-X ◀)&quot;;
+            isUserControlling = true;
+            droneState.targetRoll = Math.max(-0.4, droneState.targetRoll - changeRate);
+          } else if (activeControls.rollRight || keysPressed[&#x27;ArrowRight&#x27;] || keysPressed[&#x27;d&#x27;] || keysPressed[&#x27;D&#x27;]) {
+            activeAction = &quot;ផ្អៀងស្តាំ (ROLL / Axis-X ▶)&quot;;
+            isUserControlling = true;
+            droneState.targetRoll = Math.min(0.4, droneState.targetRoll + changeRate);
+          } else {
+            droneState.targetRoll *= 0.85; // Auto-level
+          }
+
+          // Pitch
+          if (activeControls.pitchForward || keysPressed[&#x27;ArrowUp&#x27;] || keysPressed[&#x27;w&#x27;] || keysPressed[&#x27;W&#x27;]) {
+            activeAction = &quot;ហោះទៅមុខ (PITCH / Axis-Y ▲)&quot;;
+            isUserControlling = true;
+            droneState.targetPitch = Math.max(-0.4, droneState.targetPitch - changeRate);
+          } else if (activeControls.pitchBackward || keysPressed[&#x27;ArrowDown&#x27;] || keysPressed[&#x27;s&#x27;] || keysPressed[&#x27;S&#x27;]) {
+            activeAction = &quot;ហោះថយក្រោយ (PITCH / Axis-Y ▼)&quot;;
+            isUserControlling = true;
+            droneState.targetPitch = Math.min(0.4, droneState.targetPitch + changeRate);
+          } else {
+            droneState.targetPitch *= 0.85; // Auto-level
+          }
+
+          // Yaw
+          if (activeControls.yawLeft || keysPressed[&#x27;q&#x27;] || keysPressed[&#x27;Q&#x27;]) {
+            activeAction = &quot;ងាកឆ្វេង (YAW / Axis-Z ◀)&quot;;
+            isUserControlling = true;
+            droneState.targetYaw += 0.02;
+          } else if (activeControls.yawRight || keysPressed[&#x27;e&#x27;] || keysPressed[&#x27;E&#x27;]) {
+            activeAction = &quot;ងាកស្តាំ (YAW / Axis-Z ▶)&quot;;
+            isUserControlling = true;
+            droneState.targetYaw -= 0.02;
+          }
+        }
+      }
+
+      // Live Telemetry Overlay Updater (Axis X, Y, Z + current PID)
+      const overlayEl = document.getElementById(&#x27;active-control-overlay&#x27;);
+      if (overlayEl) {
+        if (isUserControlling || droneState.isArmed) {
+          overlayEl.classList.remove(&#x27;opacity-0&#x27;, &#x27;pointer-events-none&#x27;);
+          overlayEl.classList.add(&#x27;opacity-100&#x27;);
+          document.getElementById(&#x27;active-action-name&#x27;).textContent = activeAction;
+          
+          // Compute Roll, Pitch, and Yaw degrees
+          const rollDeg = (droneState.roll * (180 / Math.PI)).toFixed(1);
+          const pitchDeg = (droneState.pitch * (180 / Math.PI)).toFixed(1);
+          const yawDeg = (droneState.yaw * (180 / Math.PI)).toFixed(1);
+          
+          document.getElementById(&#x27;overlay-axis-x&#x27;).textContent = `${rollDeg}°`;
+          document.getElementById(&#x27;overlay-axis-y&#x27;).textContent = `${pitchDeg}°`;
+          document.getElementById(&#x27;overlay-axis-z&#x27;).textContent = `${yawDeg}°`;
+          
+          // Get PID values from interactive sliders
+          const kp = parseFloat(document.getElementById(&#x27;kp-range&#x27;).value).toFixed(1);
+          const ki = parseFloat(document.getElementById(&#x27;ki-range&#x27;).value).toFixed(2);
+          const kd = parseFloat(document.getElementById(&#x27;kd-range&#x27;).value).toFixed(2);
+          
+          document.getElementById(&#x27;overlay-pid-kp&#x27;).textContent = kp;
+          document.getElementById(&#x27;overlay-pid-ki&#x27;).textContent = ki;
+          document.getElementById(&#x27;overlay-pid-kd&#x27;).textContent = kd;
+        } else {
+          overlayEl.classList.remove(&#x27;opacity-100&#x27;);
+          overlayEl.classList.add(&#x27;opacity-0&#x27;, &#x27;pointer-events-none&#x27;);
+        }
+      }
+
+      // -------------------------------------------------------------
+      // DYNAMIC PID PHYSICS FLIGHT ENGINE (OVERSHOOT &amp; OSCILLATION)
+      // -------------------------------------------------------------
+      const kp = parseFloat(document.getElementById(&#x27;kp-range&#x27;).value);
+      const ki = parseFloat(document.getElementById(&#x27;ki-range&#x27;).value);
+      const kd = parseFloat(document.getElementById(&#x27;kd-range&#x27;).value);
+      
+      const dt = 0.016; // Stable physics step delta-time (~60fps)
+
+      // 1. Altitude (Y) PID Physics Controller Loop
+      if (droneState.isArmed) {
+        let yError = droneState.targetHeight - droneState.y;
+        
+        // Integral &amp; clamping windup
+        droneState.yIntegral = (droneState.yIntegral || 0) + yError * dt;
+        droneState.yIntegral = Math.max(-2.0, Math.min(2.0, droneState.yIntegral));
+        
+        // Derivative
+        let yDerivative = (yError - (droneState.yPrevError || 0)) / dt;
+        droneState.yPrevError = yError;
+        
+        // Compute control thrust correction
+        let thrustCorrection = (kp * 1.5 * yError) + (ki * 0.4 * droneState.yIntegral) + (kd * 0.8 * yDerivative);
+        
+        droneState.yVelocity = (droneState.yVelocity || 0) + thrustCorrection * dt;
+        droneState.yVelocity *= 0.94; // System air damping drag
+        
+        droneState.y += droneState.yVelocity;
+        
+        if (droneState.y &lt; 0.1) {
+          droneState.y = 0.1;
+          droneState.yVelocity = 0;
+        }
+      } else {
+        // Safe linear descent on disarm
+        droneState.y += (0.1 - droneState.y) * 0.1;
+        droneState.yVelocity = 0;
+        droneState.yPrevError = 0;
+        droneState.yIntegral = 0;
+      }
+
+      // 2. Pitch (Y-Axis rotation in 3D, local pitch) PID Loop
+      let pitchError = droneState.targetPitch - droneState.pitch;
+      droneState.pitchIntegral = (droneState.pitchIntegral || 0) + pitchError * dt;
+      droneState.pitchIntegral = Math.max(-0.5, Math.min(0.5, droneState.pitchIntegral));
+      
+      let pitchDerivative = (pitchError - (droneState.pitchPrevError || 0)) / dt;
+      droneState.pitchPrevError = pitchError;
+      
+      // Scale formulas to visualize oscillation on excessive Kp and low Kd
+      let pitchTorque = (kp * 2.0 * pitchError) + (ki * 0.2 * droneState.pitchIntegral) + (kd * 1.2 * pitchDerivative);
+      droneState.pitchVelocity = (droneState.pitchVelocity || 0) + pitchTorque * dt;
+      droneState.pitchVelocity *= 0.88; // Aerodynamic drag damping
+      droneState.pitch += droneState.pitchVelocity;
+
+      // 3. Roll (X-Axis rotation in 3D, local roll) PID Loop
+      let rollError = droneState.targetRoll - droneState.roll;
+      droneState.rollIntegral = (droneState.rollIntegral || 0) + rollError * dt;
+      droneState.rollIntegral = Math.max(-0.5, Math.min(0.5, droneState.rollIntegral));
+      
+      let rollDerivative = (rollError - (droneState.rollPrevError || 0)) / dt;
+      droneState.rollPrevError = rollError;
+      
+      let rollTorque = (kp * 2.0 * rollError) + (ki * 0.2 * droneState.rollIntegral) + (kd * 1.2 * rollDerivative);
+      droneState.rollVelocity = (droneState.rollVelocity || 0) + rollTorque * dt;
+      droneState.rollVelocity *= 0.88; // Aerodynamic drag damping
+      droneState.roll += droneState.rollVelocity;
+
+      // 4. Yaw (Z-Axis rotation) Simple Interpolation
+      droneState.yaw += (droneState.targetYaw - droneState.yaw) * 0.1;
+
+      // Position update in 3D scene
+      drone.position.y = droneState.y;
+      drone.rotation.set(droneState.pitch, droneState.yaw, droneState.roll);
+
+      const speedMult = 0.1;
+      droneState.x += Math.sin(droneState.yaw) * droneState.pitch * speedMult;
+      droneState.z += Math.cos(droneState.yaw) * droneState.pitch * speedMult;
+      droneState.x += Math.cos(droneState.yaw) * droneState.roll * speedMult;
+      droneState.z -= Math.sin(droneState.yaw) * droneState.roll * speedMult;
+
+      drone.position.x = droneState.x;
+      drone.position.z = droneState.z;
+
+      // High-Velocity Propeller Rotation Handler with directional CW &amp; CCW logic!
+      propellers.forEach((prop, index) =&gt; {
+        // Clockwise (isCW === true) spins negatively, Counter-Clockwise spins positively!
+        const directionSign = prop.isCW ? -1 : 1;
+
+        if (droneState.isArmed &amp;&amp; droneState.y &gt; 0.05) {
+          // Fast airborne spin speed
+          const baseSpin = 1.5;
+          const tiltFactor = (index % 2 === 0 ? droneState.roll : -droneState.roll) * 0.8;
+          const speed = (baseSpin + tiltFactor) * directionSign;
+          
+          prop.group.rotation.y += speed;
+          
+          // Fade-in speed blur disc smoothly
+          if (prop.disc.material.opacity &lt; 0.7) {
+            prop.disc.material.opacity += 0.08;
+          }
+          // Fade-out solid blades
+          prop.blades.forEach(b =&gt; {
+            if (b.material.opacity &gt; 0.05) b.material.opacity -= 0.08;
+          });
+        } else {
+          // Idle Standby Spin matching CW and CCW signs!
+          const idleSpinSpeed = 0.15 * directionSign;
+          prop.group.rotation.y += idleSpinSpeed;
+
+          // Fade-out blur disc &amp; restore solid blades
+          if (prop.disc.material.opacity &gt; 0) {
+            prop.disc.material.opacity -= 0.08;
+          }
+          prop.blades.forEach(b =&gt; {
+            if (b.material.opacity &lt; 0.95) b.material.opacity += 0.08;
+          });
+        }
+      });
+
+      // Battery Simulation
+      if (droneState.isArmed &amp;&amp; droneState.battery &gt; 10.5) {
+        droneState.battery -= 0.0003;
+        document.getElementById(&#x27;telemetry-battery&#x27;).textContent = `${droneState.battery.toFixed(1)}V`;
+        if (droneState.battery &lt; 11.1) {
+          document.getElementById(&#x27;telemetry-battery&#x27;).className = &quot;text-rose-500 animate-pulse&quot;;
+        }
+      }
+
+      // Telemetry HUD Update
+      document.getElementById(&#x27;hud-pitch&#x27;).textContent = `${(droneState.pitch * (180 / Math.PI)).toFixed(1)}°`;
+      document.getElementById(&#x27;hud-roll&#x27;).textContent = `${(droneState.roll * (180 / Math.PI)).toFixed(1)}°`;
+      document.getElementById(&#x27;hud-yaw&#x27;).textContent = `${(droneState.yaw * (180 / Math.PI)).toFixed(1)}°`;
+      document.getElementById(&#x27;hud-alt&#x27;).textContent = `${droneState.y.toFixed(1)}m`;
+
+      // Motor Speed Gauges update
+      const baseM = droneState.isArmed ? Math.min(100, Math.floor((droneState.y / 10) * 80 + 20)) : 0;
+      if (baseM &gt; 0) {
+        document.getElementById(&#x27;m-fr&#x27;).textContent = `${Math.min(100, Math.max(0, Math.round(baseM + (droneState.pitch - droneState.roll) * 100)))}%`;
+        document.getElementById(&#x27;m-fl&#x27;).textContent = `${Math.min(100, Math.max(0, Math.round(baseM + (droneState.pitch + droneState.roll) * 100)))}%`;
+        document.getElementById(&#x27;m-br&#x27;).textContent = `${Math.min(100, Math.max(0, Math.round(baseM + (-droneState.pitch - droneState.roll) * 100)))}%`;
+        document.getElementById(&#x27;m-bl&#x27;).textContent = `${Math.min(100, Math.max(0, Math.round(baseM + (-droneState.pitch + droneState.roll) * 100)))}%`;
+      } else {
+        document.getElementById(&#x27;m-fr&#x27;).textContent = &quot;0%&quot;;
+        document.getElementById(&#x27;m-fl&#x27;).textContent = &quot;0%&quot;;
+        document.getElementById(&#x27;m-br&#x27;).textContent = &quot;0%&quot;;
+        document.getElementById(&#x27;m-bl&#x27;).textContent = &quot;0%&quot;;
+      }
+
+      // Smooth camera follower tracking
+      camera.position.x = droneState.x + 4;
+      camera.position.z = droneState.z + 9;
+      camera.position.y = droneState.y + 5;
+      camera.lookAt(droneState.x, droneState.y, droneState.z);
+
+      renderer.render(scene, camera);
+    }
+
+    // -------------------------------------------------------------
+    // PID LIVE STEP RESPONSE CHART &amp; SIMULATOR
+    // -------------------------------------------------------------
+    let pidChart;
+    
+    function initPIDChart() {
+      const ctx = document.getElementById(&#x27;pidChart&#x27;).getContext(&#x27;2d&#x27;);
+      pidChart = new Chart(ctx, {
+        type: &#x27;line&#x27;,
+        data: {
+          labels: Array.from({length: 40}, (_, i) =&gt; i),
+          datasets: [
+            {
+              label: &#x27;មុំតាមដាន (Setpoint)&#x27;,
+              data: Array(40).fill(10),
+              borderColor: &#x27;#ef4444&#x27;,
+              borderDash: [5, 5],
+              borderWidth: 2,
+              fill: false,
+              pointRadius: 0
+            },
+            {
+              label: &#x27;លំនឹងពិតប្រាកដ (Response)&#x27;,
+              data: Array(40).fill(0),
+              borderColor: &#x27;#22d3ee&#x27;,
+              borderWidth: 2.5,
+              fill: false,
+              pointRadius: 2,
+              tension: 0.2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: { color: &#x27;#94a3b8&#x27;, boxWidth: 12, font: { family: &#x27;Kantumruy Pro&#x27;, size: 9 } }
+            }
+          },
+          scales: {
+            x: { display: false },
+            y: {
+              grid: { color: &#x27;#1e293b&#x27; },
+              ticks: { color: &#x27;#64748b&#x27;, font: { size: 9 } },
+              min: -5,
+              max: 20
+            }
+          }
+        }
+      });
+    }
+
+    function updatePIDValues() {
+      const kp = parseFloat(document.getElementById(&#x27;kp-range&#x27;).value);
+      const ki = parseFloat(document.getElementById(&#x27;ki-range&#x27;).value);
+      const kd = parseFloat(document.getElementById(&#x27;kd-range&#x27;).value);
+
+      document.getElementById(&#x27;kp-val&#x27;).textContent = kp.toFixed(1);
+      document.getElementById(&#x27;ki-val&#x27;).textContent = ki.toFixed(2);
+      document.getElementById(&#x27;kd-val&#x27;).textContent = kd.toFixed(2);
+
+      simulatePIDResponse(kp, ki, kd);
+    }
+
+    function simulatePIDResponse(kp = 1.2, ki = 0.05, kd = 0.45) {
+      if (!pidChart) return;
+
+      const setpoint = 10;
+      let currentAngle = 0;
+      let prevError = setpoint;
+      let integral = 0;
+      const dt = 0.1;
+      const dataPoints = [0];
+
+      // Physical system parameters
+      const inertia = 0.8;
+      const resistance = 0.15;
+      let velocity = 0;
+
+      for (let i = 1; i &lt; 40; i++) {
+        let error = setpoint - currentAngle;
+        integral += error * dt;
+        let derivative = (error - prevError) / dt;
+
+        // PID output calculation
+        let output = (kp * error) + (ki * integral) + (kd * derivative);
+        
+        // Simulating rotational response dynamics
+        let acceleration = (output - resistance * velocity) / inertia;
+        velocity += acceleration * dt;
+        currentAngle += velocity * dt;
+
+        dataPoints.push(Math.min(25, Math.max(-10, currentAngle)));
+        prevError = error;
+      }
+
+      pidChart.data.datasets[1].data = dataPoints;
+      pidChart.update();
+    }
+
+    // -------------------------------------------------------------
+    // CHATBOT LOCAL KNOWLEDGE BASE (KHMER DATASET)
+    // -------------------------------------------------------------
+    const localKnowledgeBase = [
+      {
+        keywords: [&quot;pid&quot;, &quot;លំនឹង&quot;, &quot;ដំណើរការ&quot;, &quot;តើអ្វីជា&quot;, &quot;ស្វែងយល់&quot;],
+        answer: `&lt;b&gt;🤖 ជំនួយការស្វ័យប្រវត្ត (Local KB)៖&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+                 &lt;b&gt;តើប្រព័ន្ធលំនឹង PID ដំណើរការយ៉ាងដូចម្តេចនៅលើដ្រូន?&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+                 PID គឺជាប្រព័ន្ធរង្វង់មតិត្រឡប់ (Feedback Loop) ស្វ័យប្រវត្តដែលរក្សាលំនឹងដ្រូន៖&lt;br&gt;
+                 1. &lt;b&gt;Kp (Proportional Gain)៖&lt;/b&gt; កែតម្រូវល្បឿនម៉ូទ័រភ្លាមៗផ្អែកលើទំហំលំអៀងមុំ។ បើ Kp ខ្ពស់ពេក ដ្រូននឹងញ័រញាក់ (Oscillation)។&lt;br&gt;
+                 2. &lt;b&gt;Ki (Integral Gain)៖&lt;/b&gt; បូកសន្សំកំហុសលំអៀងបន្តិចម្តងៗ ដើម្បីទប់ទល់នឹងខ្យល់ ឬការលំអៀងផ្នែកទម្ងន់។&lt;br&gt;
+                 3. &lt;b&gt;Kd (Derivative Gain)៖&lt;/b&gt; ទស្សន៍ទាយល្បឿនប្រែប្រួល និងដើរតួជាហ្វ្រាំងទប់ដើម្បីកាត់បន្ថយការយោលហួសគោលដៅ (Overshoot)។`
+      },
+      {
+        keywords: [&quot;kp&quot;, &quot;proportional&quot;, &quot;oscillat&quot;, &quot;ញ័រ&quot;, &quot;រេ&quot;, &quot;ញាក់&quot;],
+        answer: `&lt;b&gt;🤖 ជំនួយការស្វ័យប្រវត្ត (Local KB)៖&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+                 &lt;b&gt;តើតម្លៃ Kp (Proportional) បង្កឱ្យមានចលនាអ្វីខ្លះនៅលើដ្រូន?&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+                 - &lt;b&gt;Kp&lt;/b&gt; កំណត់កម្លាំងប្រតិកម្មតបទៅនឹងមុំផ្អៀងបច្ចុប្បន្ន។&lt;br&gt;
+                 - ប្រសិនបើ &lt;b&gt;Kp ខ្ពស់ពេក (ឧទាហរណ៍ 4.0)&lt;/b&gt; ដ្រូននឹងឆ្លើយតបរហ័សជ្រុល បណ្តាលឱ្យកើតមានចលនា &lt;b&gt;Oscillation (លំយោលញ័ររេចុះឡើងៗខ្លាំង)&lt;/b&gt; នៅក្នុងបន្ទប់សាកល្បង 3D។&lt;br&gt;
+                 - បើ &lt;b&gt;Kp ទាបពេក&lt;/b&gt; ដ្រូននឹងទន់ជ្រាយ យឺតយ៉ាវ និងងាយធ្លាក់ ព្រោះគ្មានកម្លាំងទប់ទល់មុំលំអៀង។`
+      },
+      {
+        keywords: [&quot;kd&quot;, &quot;derivative&quot;, &quot;overshoot&quot;, &quot;ហួស&quot;, &quot;លំយោល&quot;],
+        answer: `&lt;b&gt;🤖 ជំនួយការស្វ័យប្រវត្ត (Local KB)៖&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+                 &lt;b&gt;តើតម្លៃ Kd (Derivative) ប៉ះពាល់អ្វីខ្លះដល់លំនឹងដ្រូន?&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+                 - &lt;b&gt;Kd&lt;/b&gt; ធ្វើការជាឧបករណ៍ស្រូបកម្លាំងយោល (Damper) និងព្យាករណ៍ពីកំហុសនាពេលខាងមុខ។&lt;br&gt;
+                 - វាជួយទប់ស្កាត់ការហោះហួសទីតាំង &lt;b&gt;Overshoot (ការហោះហួសកម្ពស់ ២ម ទៅ ២.៦ម រួចធ្លាក់ចុះមកវិញ)&lt;/b&gt;។&lt;br&gt;
+                 - ប្រសិនបើអ្នកបន្ថយ &lt;b&gt;Kd មក 0.0&lt;/b&gt; ដ្រូននឹងលោតយោលហួសគោលដៅខ្លាំង ដូចការបង្ហាញនៅលើក្រាហ្វ Chart.js ជាក់ស្តែង។`
+      },
+      {
+        keywords: [&quot;ki&quot;, &quot;integral&quot;, &quot;កំហុស&quot;, &quot;លំអៀង&quot;, &quot;សន្សំ&quot;],
+        answer: `&lt;b&gt;🤖 ជំនួយការស្វ័យប្រវត្ត (Local KB)៖&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+                 &lt;b&gt;តើតម្លៃ Ki (Integral) មានតួនាទីអ្វីខ្លះនៅលើដ្រូន?&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+                 - &lt;b&gt;Ki&lt;/b&gt; ជួយលុបបំបាត់កំហុសសន្សំបន្តិចម្តងៗដែលបណ្តាលមកពីកត្តាខាងក្រៅ (ឧទាហរណ៍៖ កម្លាំងខ្យល់បោកបក់ ឬទម្ងន់ផ្នែកណាមួយធ្ងន់ជាង)។&lt;br&gt;
+                 - ប្រសិនបើ &lt;b&gt;Ki ខ្ពស់ពេក&lt;/b&gt; វានឹងបង្កើតឱ្យមានលំយោលយឺតៗហៅថា Windup Error។`
+      },
+      {
+        keywords: [&quot;mpu6050&quot;, &quot;sensor&quot;, &quot;gyro&quot;, &quot;accelerometer&quot;, &quot;វាស់&quot;, &quot;លំអៀង&quot;, &quot;សេនស័រ&quot;],
+        answer: `&lt;b&gt;🤖 ជំនួយការស្វ័យប្រវត្ត (Local KB)៖&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+                 &lt;b&gt;របៀបភ្ជាប់សេនស័រវាស់លំអៀង MPU6050 ទៅនឹង ESP32៖&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+                 MPU6050 រួមបញ្ចូល Gyroscope និង Accelerometer ៦អ័ក្ស សម្រាប់វាស់មុំផ្អៀងដ្រូន៖&lt;br&gt;
+                 - &lt;b&gt;VCC (សេនស័រ)&lt;/b&gt; -&gt; 3.3V (ជើងភ្លើង ESP32)&lt;br&gt;
+                 - &lt;b&gt;GND&lt;/b&gt; -&gt; GND (ជើងដី)&lt;br&gt;
+                 - &lt;b&gt;SCL (I2C Clock)&lt;/b&gt; -&gt; ESP32 GPIO 22&lt;br&gt;
+                 - &lt;b&gt;SDA (I2C Data)&lt;/b&gt; -&gt; ESP32 GPIO 21&lt;br&gt;
+                 - អាសយដ្ឋានលំនាំដើម I2C គឺ &lt;b&gt;0x68&lt;/b&gt;។`
+      },
+      {
+        keywords: [&quot;brushed&quot;, &quot;coreless&quot;, &quot;motor&quot;, &quot;ម៉ូទ័រ&quot;, &quot;មានជក់&quot;, &quot;ស៊ីឡាំង&quot;],
+        answer: `&lt;b&gt;🤖 ជំនួយការស្វ័យប្រវត្ត (Local KB)៖&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+                 &lt;b&gt;តើដ្រូននេះប្រើប្រាស់ម៉ូទ័រប្រភេទអ្វី?&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+                 ដ្រូននេះប្រើប្រាស់ &lt;b&gt;ម៉ូទ័រមានជក់ស៊ីឡាំងពណ៌ប្រាក់ (Brushed Coreless Motors)&lt;/b&gt; ដែលមានទម្ងន់ស្រាលបំផុត៖&lt;br&gt;
+                 - &lt;b&gt;M1 (Front-Right CW)&lt;/b&gt; និង &lt;b&gt;M4 (Rear-Left CW)&lt;/b&gt; វិលស្របទ្រនិចនាឡិកា (ខ្សែភ្លើងពណ៌ក្រហម/ខៀវ)។&lt;br&gt;
+                 - &lt;b&gt;M2 (Front-Left CCW)&lt;/b&gt; និង &lt;b&gt;M3 (Rear-Right CCW)&lt;/b&gt; វិលបញ្ច្រាសទ្រនិចនាឡិកា (ខ្សែភ្លើងពណ៌ខ្មៅ/ស)。&lt;br&gt;
+                 - ម៉ូទ័រប្រភេទនេះបញ្ជាល្បឿនដោយប្រើប្រាស់សញ្ញា PWM តាមរយៈ Mosfet (ដូចជា AO3400)។`
+      },
+      {
+        keywords: [&quot;red&quot;, &quot;standoffs&quot;, &quot;បង្គោល&quot;, &quot;ពណ៌ក្រហម&quot;, &quot;តួ&quot;, &quot;ស្តាប&quot;],
+        answer: `&lt;b&gt;🤖 ជំនួយការស្វ័យប្រវត្ត (Local KB)៖&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+                 &lt;b&gt;តើបង្គោលភ្ជាប់តួពណ៌ក្រហម (Red Anodized Standoffs) ប្រើប្រាស់សម្រាប់អ្វី?&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+                 - បង្គោលទាំង ៤ ពណ៌ក្រហមចាំងបែបលោហៈធាតុ Red Anodized Aluminum ត្រូវបានប្រើប្រាស់ដើម្បីភ្ជាប់**បន្ទះតួខាងក្រោម (Lower Plate)** និង**បន្ទះតួខាងលើ (Upper Plate)** ឱ្យជាប់គ្នាយ៉ាងរឹងមាំបំផុត។&lt;br&gt;
+                 - វាជួយការពារកុំឱ្យបាក់ស្រុត ឬខូចខាតប្រព័ន្ធអេឡិចត្រូនិក និងសេនស័រ MPU6050 ពេលដ្រូនធ្លាក់ ឬប៉ះទង្គិច។`
+      },
+      {
+        keywords: [&quot;esp32&quot;, &quot;connect&quot;, &quot;ភ្ជាប់&quot;, &quot;ជើង&quot;, &quot;pin&quot;, &quot;ledc&quot;],
+        answer: `&lt;b&gt;🤖 ជំនួយការស្វ័យប្រវត្ត (Local KB)៖&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+                 &lt;b&gt;ការកំណត់ជើងបញ្ជាម៉ូទ័រនៅលើ ESP32៖&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+                 - &lt;b&gt;MOTOR_1 (Front-Right)&lt;/b&gt; -&gt; GPIO 12&lt;br&gt;
+                 - &lt;b&gt;MOTOR_2 (Front-Left)&lt;/b&gt; -&gt; GPIO 14&lt;br&gt;
+                 - &lt;b&gt;MOTOR_3 (Rear-Right)&lt;/b&gt; -&gt; GPIO 27&lt;br&gt;
+                 - &lt;b&gt;MOTOR_4 (Rear-Left)&lt;/b&gt; -&gt; GPIO 26&lt;br&gt;&lt;br&gt;
+                 នៅក្នុង Setup យើងប្រើប្រាស់កម្មវិធី &lt;code&gt;ledcSetup&lt;/code&gt; និង &lt;code&gt;ledcAttachPin&lt;/code&gt; ដើម្បីបញ្ជូនសញ្ញា PWM កម្រិតខ្ពស់ (ជិត 500Hz) ទៅកាន់ម៉ូទ័រដើម្បីកុំឱ្យម៉ូទ័រលាន់ឮសម្លេងរំខាន។`
+      }
+    ];
+
+    function queryLocalKnowledgeBase(query) {
+      const cleanQuery = query.toLowerCase().replace(/[?.,\/#!$%\^&amp;\*;:{}=\-_`~()]/g, &quot;&quot;);
+      let bestMatch = null;
+      let highestScore = 0;
+
+      for (const entry of localKnowledgeBase) {
+        let score = 0;
+        for (const keyword of entry.keywords) {
+          if (cleanQuery.includes(keyword)) {
+            score++;
+          }
+        }
+        if (score &gt; highestScore) {
+          highestScore = score;
+          bestMatch = entry;
+        }
+      }
+
+      if (highestScore &gt; 0 &amp;&amp; bestMatch) {
+        return bestMatch.answer;
+      }
+
+      // Default fallback when no keyword matches
+      return `&lt;b&gt;🤖 ជំនួយការស្វ័យប្រវត្ត (Local KB)៖&lt;/b&gt;&lt;br&gt;&lt;br&gt;
+              ខ្ញុំរកមិនឃើញព័ត៌មានជាក់លាក់ទាក់ទងនឹង &lt;i&gt;&quot;${query}&quot;&lt;/i&gt; នៅក្នុងប្រព័ន្ធក្នុងស្រុកឡើយ។&lt;br&gt;&lt;br&gt;
+              💡 &lt;b&gt;ប្រធានបទដែលអ្នកអាចសួរបាន៖&lt;/b&gt;&lt;br&gt;
+              - &lt;i&gt;លំនឹង PID, Kp, Ki, Kd, Overshoot, Oscillation&lt;/i&gt;&lt;br&gt;
+              - &lt;i&gt;MPU6050 សេនស័រ, ម៉ូទ័រមានជក់ (Brushed), បង្គោលតួពណ៌ក្រហម (Red Standoffs)&lt;/i&gt;&lt;br&gt;
+              - &lt;i&gt;ESP32 connect ជើងភ្ជាប់ម៉ូទ័រ&lt;/i&gt;&lt;br&gt;&lt;br&gt;
+              * &lt;b&gt;ចំណាំ៖&lt;/b&gt; សូមបញ្ចូល **Gemini API Key** របស់អ្នកនៅផ្នែកខាងលើ ដើម្បីប្រើប្រាស់ខួរក្បាលសិប្បនិម្មិតកម្រិតខ្ពស់ Gemini ឆ្លើយរាល់សំណួរទូទៅដទៃទៀតបានពេញលេញ!`;
+    }
+
+    // API KEY MANAGEMENT LOGICS
+    function toggleApiKeyVisibility() {
+      const input = document.getElementById(&#x27;gemini-api-key-input&#x27;);
+      const icon = document.getElementById(&#x27;key-visibility-icon&#x27;);
+      if (input.type === &#x27;password&#x27;) {
+        input.type = &#x27;text&#x27;;
+        icon.className = &quot;fa-solid fa-eye text-xs&quot;;
+      } else {
+        input.type = &#x27;password&#x27;;
+        icon.className = &quot;fa-solid fa-eye-slash text-xs&quot;;
+      }
+    }
+
+    function saveGeminiKey() {
+      const input = document.getElementById(&#x27;gemini-api-key-input&#x27;);
+      const keyVal = input.value.trim();
+      if (!keyVal) {
+        showToast(&#x27;⚠️ សូមបញ្ចូល API Key ជាមុនសិន!&#x27;, false);
+        return;
+      }
+
+      geminiApiKey = keyVal;
+      localStorage.setItem(&#x27;rupp_gemini_api_key&#x27;, keyVal);
+      updateApiKeyStatus();
+      showToast(&#x27;🔑 រក្សាទុក Gemini API Key ជោគជ័យ!&#x27;, true);
+    }
+
+    function clearGeminiKey() {
+      geminiApiKey = &quot;&quot;;
+      localStorage.removeItem(&#x27;rupp_gemini_api_key&#x27;);
+      document.getElementById(&#x27;gemini-api-key-input&#x27;).value = &quot;&quot;;
+      updateApiKeyStatus();
+      showToast(&#x27;🗑️ បានលុបចោល API Key! ប្ដូរទៅប្រើ Local KB ជំនួសវិញ។&#x27;, false);
+    }
+
+    function updateApiKeyStatus() {
+      const badge = document.getElementById(&#x27;api-status-badge&#x27;);
+      const input = document.getElementById(&#x27;gemini-api-key-input&#x27;);
+      
+      if (geminiApiKey) {
+        input.value = geminiApiKey;
+        badge.textContent = &quot;Gemini AI Active&quot;;
+        badge.className = &quot;text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 font-bold uppercase tracking-wider&quot;;
+      } else {
+        input.value = &quot;&quot;;
+        badge.textContent = &quot;Local KB Mode&quot;;
+        badge.className = &quot;text-[9px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/20 font-bold uppercase tracking-wider&quot;;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // GEMINI AI INTEGRATION (ROBUST EXTRAPOLATION WITH BACKOFF)
+    // -------------------------------------------------------------
+    function setAiQuery(text) {
+      document.getElementById(&#x27;ai-input&#x27;).value = text;
+      sendAiMessage();
+    }
+
+    async function sendAiMessage() {
+      const inputEl = document.getElementById(&#x27;ai-input&#x27;);
+      const query = inputEl.value.trim();
+      if (!query) return;
+
+      inputEl.value = &#x27;&#x27;;
+      appendChatMessage(&#x27;user&#x27;, query);
+
+      // Loading display
+      const loadingId = appendChatMessage(&#x27;ai&#x27;, &#x27;កំពុងវិភាគ និងគិតរកចម្លើយ...&#x27;);
+
+      try {
+        const responseText = await fetchGeminiWithBackoff(query);
+        updateChatMessage(loadingId, responseText);
+      } catch (err) {
+        updateChatMessage(loadingId, &#x27;❌ កំហុស៖ មិនអាចភ្ជាប់ទៅកាន់សេវា AI របស់ហ្គូហ្គលបានទេ។ សូមព្យាយាមម្តងទៀត!&#x27;);
+      }
+    }
+
+    async function fetchGeminiWithBackoff(userQuery) {
+      // Fallback to local KB immediately if no key provided
+      if (!geminiApiKey) {
+        logToTerminal(&quot;រកមិនឃើញ API Key របស់ Gemini ទេ។ ប្រព័ន្ធប្ដូរទៅប្រើប្រាស់ Local Knowledge Base...&quot;);
+        return queryLocalKnowledgeBase(userQuery);
+      }
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiApiKey}`;
+      const systemInstruction = `You are a helpful drone hardware engineering specialist representing RUPP B402 Lab.
+      Respond STRICTLY in Khmer (ភាសាខ្មែរ) with technical accuracy.
+      Assist the student with practical step-by-step guidance on ESP32 development, PID stabilization, calibration, and wiring diagrams. Keep answers educational and concise.`;
+      
+      const payload = {
+        contents: [{ parts: [{ text: userQuery }] }],
+        systemInstruction: { parts: [{ text: systemInstruction }] }
+      };
+
+      let delay = 1000;
+      for (let attempt = 1; attempt &lt;= 5; attempt++) {
+        try {
+          const response = await fetch(url, {
+            method: &#x27;POST&#x27;,
+            headers: { &#x27;Content-Type&#x27;: &#x27;application/json&#x27; },
+            body: JSON.stringify(payload)
+          });
+          
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const result = await response.json();
+          return result.candidates?.[0]?.content?.parts?.[0]?.text || &quot;មិនអាចទាញយកចម្លើយបានទេ។&quot;;
+        } catch (error) {
+          if (attempt === 5) {
+            // Ultimate fallback to local KB if Gemini API crashes
+            logToTerminal(&quot;Gemini API Error. ប្ដូរទៅប្រើប្រាស់ Local KB ជំនួសវិញ...&quot;);
+            return queryLocalKnowledgeBase(userQuery);
+          }
+          await new Promise(r =&gt; setTimeout(r, delay));
+          delay *= 2; // Exponential Backoff
+        }
+      }
+    }
+
+    let msgCounter = 0;
+    function appendChatMessage(role, text) {
+      const chatHist = document.getElementById(&#x27;ai-chat-history&#x27;);
+      msgCounter++;
+      const id = `msg-${msgCounter}`;
+      
+      const isUser = role === &#x27;user&#x27;;
+      const wrapper = document.createElement(&#x27;div&#x27;);
+      wrapper.className = isUser ? &quot;flex justify-end&quot; : &quot;flex justify-start&quot;;
+      
+      const msgCard = document.createElement(&#x27;div&#x27;);
+      msgCard.id = id;
+      msgCard.className = isUser 
+        ? &quot;bg-cyan-600 text-slate-950 p-3 rounded-2xl max-w-[85%] font-medium leading-relaxed&quot; 
+        : &quot;bg-slate-900 border border-slate-800 text-slate-200 p-3 rounded-2xl max-w-[85%] leading-relaxed&quot;;
+      
+      msgCard.innerHTML = text.replace(/\n/g, &#x27;&lt;br&gt;&#x27;);
+      wrapper.appendChild(msgCard);
+      
+      // Clear empty notification placeholder
+      if (chatHist.querySelector(&#x27;.italic&#x27;)) {
+        chatHist.innerHTML = &#x27;&#x27;;
+      }
+      
+      chatHist.appendChild(wrapper);
+      chatHist.scrollTop = chatHist.scrollHeight;
+      return id;
+    }
+
+    function updateChatMessage(id, newText) {
+      const msg = document.getElementById(id);
+      if (msg) {
+        msg.innerHTML = newText.replace(/\n/g, &#x27;&lt;br&gt;&#x27;);
+        const chatHist = document.getElementById(&#x27;ai-chat-history&#x27;);
+        chatHist.scrollTop = chatHist.scrollHeight;
+      }
+    }
+
+    // ONLOAD INITIALIZATION STARTS HERE
+    window.onload = () =&gt; {
+      init3DSpace();
+      initPIDChart();
+      updatePIDValues();
+      dbSwitchStage(1);
+      updateApiKeyStatus(); // Load and display saved API key status
+    };
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;" style="width:100%;height:100%;border:0;display:block;background:#020617;"></iframe>
+        </div>
+      </div>
+
+    </div>
+    <script src="../javascript/smart-parking-simulator.js"></script>
+    <script src="../javascript/script.js"></script>
+    <script src="../javascript/mqtt-simulator.js"></script>
+    <script src="../javascript/rc-car-simulator.js"></script>
+</body>
+
+</html>
