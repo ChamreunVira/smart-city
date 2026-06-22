@@ -20,7 +20,7 @@ function applyTheme(theme) {
   localStorage.setItem("smartCityTheme", isLight ? "light" : "dark");
   const icon = document.getElementById("themeIcon");
   const label = document.getElementById("themeLabel");
-  if (icon) icon.innerText = isLight ? "☀" : "☾";
+  // if (icon) icon.innerText = isLight ? "☀" : "";
   if (label) label.innerText = isLight ? "Light" : "Dark";
 }
 
