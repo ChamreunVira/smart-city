@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart City Interactive Component Map</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at top right, #0d1527, #040814);
+        }
+        .heading-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .glassmorphism {
+            background: rgba(13, 22, 43, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen p-4 md:p-8 overflow-x-hidden">
+
+    <header class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-6">
+        <div>
+            <h1 class="heading-font text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-400 via-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+                SMART CITY IoT ARCHITECTURE
+            </h1>
+            <p class="text-sm text-slate-400 mt-1">Interactive Component Map & Circuit Connection Dashboard</p>
+        </div>
+        <div class="flex items-center gap-3 glassmorphism px-4 py-2 rounded-xl text-xs font-mono tracking-wider text-cyan-400 border border-cyan-500/20 shadow-[0_0_15px_rgba(34,211,238,0.1)]">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            SYSTEM STATUS: ONLINE
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <section class="lg:col-span-7 xl:col-span-8 space-y-4">
+            <div class="glassmorphism rounded-2xl p-4 overflow-hidden relative group border-slate-800 shadow-2xl">
+                <div class="absolute top-4 left-4 z-10 bg-slate-950/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-xs font-medium text-slate-400">
+                    <i class="fa-solid fa-map-location-dot text-blue-400 mr-1.5"></i> Blueprint Blueprint Interactive Layout
+                </div>
+                
+                <div class="relative w-full overflow-hidden rounded-xl border border-slate-800 bg-slate-950">
+                    <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1200&q=80" 
+                         alt="City Blueprint" 
+                         class="w-full opacity-40 mix-blend-luminosity grayscale contrast-125 select-none pointer-events-none">
+                    
+                    <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none"></div>
+
+                    <div onclick="selectArea('smart-parking')" 
+                         style="top: 15%; left: 10%; width: 35%; height: 32%;"
+                         class="absolute border-2 border-blue-500 bg-blue-500/10 cursor-pointer transition-all duration-300 hover:bg-blue-500/20 hover:border-blue-400 hover:shadow-[0_0_25px_rgba(59,130,246,0.4)] group/area rounded-lg flex flex-col justify-between p-3">
+                        <span class="text-[10px] font-mono bg-blue-950/80 text-blue-300 px-2 py-0.5 rounded border border-blue-500/30 self-start">ZONE-A: PARKING</span>
+                        <div class="text-right text-xs font-semibold text-blue-400 opacity-80 group-hover/area:opacity-100 transition-opacity">
+                            <i class="fa-solid fa-square-parking text-lg"></i>
+                        </div>
+                    </div>
+
+                    <div onclick="selectArea('traffic-control')" 
+                         style="top: 55%; left: 15%; width: 28%; height: 35%;"
+                         class="absolute border-2 border-emerald-500 bg-emerald-500/10 cursor-pointer transition-all duration-300 hover:bg-emerald-500/20 hover:border-emerald-400 hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] group/area rounded-lg flex flex-col justify-between p-3">
+                        <span class="text-[10px] font-mono bg-emerald-950/80 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30 self-start">ZONE-B: TRAFFIC</span>
+                        <div class="text-right text-xs font-semibold text-emerald-400 opacity-80 group-hover/area:opacity-100 transition-opacity">
+                            <i class="fa-solid fa-traffic-light text-lg"></i>
+                        </div>
+                    </div>
+
+                    <div onclick="selectArea('surveillance')" 
+                         style="top: 15%; left: 55%; width: 35%; height: 32%;"
+                         class="absolute border-2 border-cyan-500 bg-cyan-500/10 cursor-pointer transition-all duration-300 hover:bg-cyan-500/20 hover:border-cyan-400 hover:shadow-[0_0_25px_rgba(6,182,212,0.4)] group/area rounded-lg flex flex-col justify-between p-3">
+                        <span class="text-[10px] font-mono bg-cyan-950/80 text-cyan-300 px-2 py-0.5 rounded border border-cyan-500/30 self-start">ZONE-C: SECURITY</span>
+                        <div class="text-right text-xs font-semibold text-cyan-400 opacity-80 group-hover/area:opacity-100 transition-opacity">
+                            <i class="fa-solid fa-video text-lg"></i>
+                        </div>
+                    </div>
+
+                    <div onclick="selectArea('environment')" 
+                         style="top: 55%; left: 50%; width: 40%; height: 35%;"
+                         class="absolute border-2 border-purple-500 bg-purple-500/10 cursor-pointer transition-all duration-300 hover:bg-purple-500/20 hover:border-purple-400 hover:shadow-[0_0_25px_rgba(168,85,247,0.4)] group/area rounded-lg flex flex-col justify-between p-3">
+                        <span class="text-[10px] font-mono bg-purple-950/80 text-purple-300 px-2 py-0.5 rounded border border-purple-500/30 self-start">ZONE-D: ENV SENSOR</span>
+                        <div class="text-right text-xs font-semibold text-purple-400 opacity-80 group-hover/area:opacity-100 transition-opacity">
+                            <i class="fa-solid fa-cloud-sun-rain text-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-4 text-xs font-mono justify-center bg-slate-950/40 p-3 rounded-xl border border-slate-800">
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span> Smart Parking</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span> Traffic Control</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)]"></span> Surveillance</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]"></span> Environment Node</span>
+            </div>
+        </section>
+
+        <section id="info-panel" class="lg:col-span-5 xl:col-span-4 min-h-[600px] flex flex-col">
+            <div id="panel-placeholder" class="glassmorphism rounded-2xl p-8 text-center flex flex-col items-center justify-center flex-1 border-dashed border-slate-700">
+                <div class="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 text-2xl mb-4 border border-blue-500/20 animate-bounce">
+                    <i class="fa-solid fa-hand-pointer"></i>
+                </div>
+                <h3 class="heading-font text-lg font-semibold text-slate-200">សូមជ្រើសរើសតំបន់ណាមួយ</h3>
+                <p class="text-xs text-slate-400 max-w-[250px] mt-2 leading-relaxed">ចុចលើតំបន់ដែលមាននៅលើផែនទី Blueprint ខាងឆ្វេង ដើម្បីមើលព័ត៌មានលម្អិត ប្លង់តំណខ្សែ និងកូដគំរូ។</p>
+            </div>
+
+            <div id="panel-content" class="glassmorphism rounded-2xl p-5 flex flex-col flex-1 border-slate-800 shadow-2xl hidden">
+                <div class="flex justify-between items-start border-b border-slate-800 pb-4 mb-4">
+                    <div>
+                        <span id="p-zone-code" class="text-[10px] font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20">CODE</span>
+                        <h2 id="p-area-name" class="heading-font text-xl font-bold mt-1 text-white">Area Name</h2>
+                    </div>
+                    <button onclick="closePanel()" class="text-slate-400 hover:text-white p-1 rounded-lg bg-slate-800/40 hover:bg-slate-800 border border-slate-700/50 transition-colors">
+                        <i class="fa-solid fa-xmark px-1"></i>
+                    </button>
+                </div>
+
+                <div class="flex gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800 text-xs mb-4">
+                    <button onclick="switchTab('specs')" id="tab-btn-specs" class="flex-1 py-2 text-center rounded-lg font-medium transition-all bg-blue-600 text-white">Specs</button>
+                    <button onclick="switchTab('wiring')" id="tab-btn-wiring" class="flex-1 py-2 text-center rounded-lg font-medium transition-all text-slate-400 hover:text-slate-200">Wiring</button>
+                    <button onclick="switchTab('code')" id="tab-btn-code" class="flex-1 py-2 text-center rounded-lg font-medium transition-all text-slate-400 hover:text-slate-200">Source Code</button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto custom-scrollbar pr-1 text-sm space-y-4 max-h-[500px]">
+                    
+                    <div id="tab-content-specs" class="space-y-4">
+                        <div>
+                            <h4 class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-1.5">Description</h4>
+                            <p id="p-description" class="text-slate-300 leading-relaxed text-xs">Description text goes here.</p>
+                        </div>
+                        
+                        <div>
+                            <h4 class="text-xs font-mono text-slate-400 uppercase tracking-wider mb-2.5">Hardware Components Included</h4>
+                            <div id="p-components-list" class="space-y-2">
+                                </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-content-wiring" class="space-y-4 hidden">
+                        <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-xl">
+                            <h4 class="text-xs font-mono text-cyan-400 mb-2 flex items-center gap-1.5">
+                                <i class="fa-solid fa-network-wired"></i> PIN CONNECTION SCHEMATIC
+                            </h4>
+                            <div id="p-wiring-table" class="space-y-1.5 font-mono text-xs">
+                                </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-content-code" class="space-y-4 hidden">
+                        <div class="relative group">
+                            <div class="absolute right-3 top-3 text-[10px] font-mono text-slate-500 bg-slate-900/80 px-2 py-0.5 rounded border border-slate-800">C++ MCU</div>
+                            <pre class="bg-slate-950 p-4 rounded-xl text-[11px] font-mono overflow-x-auto text-emerald-400 border border-slate-900 custom-scrollbar"><code id="p-mcu-code"> // Code here </code></pre>
+                        </div>
+                        <div class="relative group">
+                            <div class="absolute right-3 top-3 text-[10px] font-mono text-slate-500 bg-slate-900/80 px-2 py-0.5 rounded border border-slate-800">JS API Fetch</div>
+                            <pre class="bg-slate-950 p-4 rounded-xl text-[11px] font-mono overflow-x-auto text-cyan-400 border border-slate-900 custom-scrollbar"><code id="p-js-code"> // JS Fetch Code </code></pre>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const smartCityData = {
+            'smart-parking': {
+                name: 'Smart Parking System',
+                code: 'SYS-PK-01',
+                description: 'ប្រព័ន្ធគ្រប់គ្រងចំណតរថយន្តឆ្លាតវៃដែលអាចផ្ទៀងផ្ទាត់យានយន្តតាមរយៈកាត RFID បើកបររបារស្វ័យប្រវត្តិតាមរយៈ Servo Motor និងប្រើប្រាស់ Ultrasonic Sensor ដើម្បីផ្ទៀងផ្ទាត់ទំហំចំណតទំនេរផ្ញើទៅកាន់ Cloud Cloud Storage។',
+                components: [
+                    {
+                        name: 'ESP32 NodeMCU',
+                        img: 'https://images.unsplash.com/photo-1553406830-ef2513450d76?auto=format&fit=crop&w=150&q=80', // Placeholder with real representation style
+                        qty: 1,
+                        desc: 'Main micro-controller handling Wi-Fi connection and sensor reading.'
+                    },
+                    {
+                        name: 'RFID-RC522 Module',
+                        img: 'https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=150&q=80',
+                        qty: 1,
+                        desc: 'Radio frequency identification module to scan staff and subscriber entry badges.'
+                    },
+                    {
+                        name: 'Ultrasonic Sensor (HC-SR04)',
+                        img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=150&q=80',
+                        qty: 4,
+                        desc: 'Measures vehicle presence in individual slot grids.'
+                    },
+                    {
+                        name: 'Servo Motor (MG996R)',
+                        img: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=150&q=80',
+                        qty: 1,
+                        desc: 'High torque motor used to automate the gate barrier mechanics.'
+                    }
+                ],
+                wiring: [
+                    { source: 'RFID RC522 VCC', target: 'ESP32 3.3V', color: 'text-red-400' },
+                    { source: 'RFID RC522 GND', target: 'ESP32 GND', color: 'text-slate-500' },
+                    { source: 'RFID RC522 MISO / MOSI', target: 'GPIO 19 / GPIO 23 (SPI Link)', color: 'text-cyan-400' },
+                    { source: 'Ultrasonic HC-SR04 VCC', target: 'ESP32 5V (Vin)', color: 'text-red-400' },
+                    { source: 'Ultrasonic Trig / Echo', target: 'GPIO 12 / GPIO 13', color: 'text-purple-400' },
+                    { source: 'Servo Motor PWM Signal', target: 'GPIO 25 (Hardware PWM)', color: 'text-amber-400' }
+                ],
+                mcuCode: `// Smart Parking Gate System Control
+#include <SPI.h>
+#include <MFRC522.h>
+#include <ESP32Servo.h>
+
+#define SS_PIN    21
+#define RST_PIN   22
+#define SERVO_PIN 25
+
+MFRC522 mfrc522(SS_PIN, RST_PIN);
+Servo gateServo;
+
+void setup() {
+  Serial.begin(115200);
+  SPI.begin();
+  mfrc522.PCD_Init();
+  gateServo.attach(SERVO_PIN);
+  gateServo.write(0); // Close Gate
+  Serial.println("Parking System Initialized...");
+}
+
+void loop() {
+  if ( ! mfrc522.PICC_IsNewCardPresent() || ! mfrc522.PICC_ReadCardSerial()) {
+    return;
+  }
+  
+  // Basic simulation: Grant access on scan
+  Serial.println("Authorized Access ID detected.");
+  gateServo.write(90); // Open Barrier
+  delay(5000);
+  gateServo.write(0);  // Close Barrier
+}`,
+                jsCode: `// Fetch Active Parking Slot Occupancy State
+async function updateParkingDashboard() {
+  try {
+    const response = await fetch('https://api.smartcity.io/v1/parking/status', {
+      method: 'GET',
+      headers: { 'Authorization': 'Bearer API_SECRET_TOKEN' }
+    });
+    const data = await response.json();
+    console.log("Available Slots: " + data.available_slots);
+  } catch (error) {
+    console.error("Failed to sync structural analytics telemetry:", error);
+  }
+}`
+            },
+            'traffic-control': {
+                name: 'Intelligent Traffic & Relay System',
+                code: 'SYS-TF-02',
+                description: 'ប្រព័ន្ធគ្រប់គ្រងភ្លើងសញ្ញាចរាចរណ៍វៃឆ្លាត ប្រើប្រាស់សហការជាមួយ Relay Module ដើម្បីបញ្ជាភ្លើងថាមពលខ្ពស់ និងភ្ជាប់ជាមួយ Buzzer សម្រាប់ជំនួយដល់ជនពិការភ្នែកឆ្លងកាត់ផ្លូវ។',
+                components: [
+                    { name: 'Arduino Uno R3', img: 'https://images.unsplash.com/photo-1608564697171-2f6118fc5f37?auto=format&fit=crop&w=150&q=80', qty: 1, desc: 'Central standard Processing unit for regional time logic.' },
+                    { name: 'High-Power Relay Module', img: 'https://images.unsplash.com/photo-1555664424-778a1e5e1b48?auto=format&fit=crop&w=150&q=80', qty: 1, desc: 'Isolates electronics to safely switch 220V street lighting systems.' },
+                    { name: 'LED Traffic Module', img: 'https://images.unsplash.com/photo-1510935560948-4e311bfb264e?auto=format&fit=crop&w=150&q=80', qty: 2, desc: 'High brightness Red, Yellow, Green standalone cluster indicator.' },
+                    { name: 'Active Buzzer Module', img: 'https://images.unsplash.com/photo-1590242421993-415921085ba4?auto=format&fit=crop&w=150&q=80', qty: 1, desc: 'Audio cue generator synchronization for crosswalk parameters.' }
+                ],
+                wiring: [
+                    { source: 'LED Traffic Module VCC', target: 'Arduino 5V Line', color: 'text-red-400' },
+                    { source: 'Red/Yellow/Green Pins', target: 'Digital Pins D4, D5, D6', color: 'text-emerald-400' },
+                    { source: 'Relay Module IN1', target: 'Digital Pin D7', color: 'text-purple-400' },
+                    { source: 'Buzzer Positive Pin', target: 'Digital Pin D8', color: 'text-amber-400' },
+                    { source: 'Common Grounds (GND)', target: 'Arduino GND Rail', color: 'text-slate-500' }
+                ],
+                mcuCode: `// Intelligent Intersection Sequence Code
+const int RED = 4;
+const int YELLOW = 5;
+const int GREEN = 6;
+const int BUZZER = 8;
+
+void setup() {
+  pinMode(RED, OUTPUT);
+  pinMode(YELLOW, OUTPUT);
+  pinMode(GREEN, OUTPUT);
+  pinMode(BUZZER, OUTPUT);
+}
+
+void loop() {
+  // Green Phase
+  digitalWrite(GREEN, HIGH);
+  digitalWrite(RED, LOW);
+  delay(10000);
+  
+  // Yellow Phase
+  digitalWrite(GREEN, LOW);
+  digitalWrite(YELLOW, HIGH);
+  delay(2000);
+  
+  // Red Phase + Blind Pedestrian Audio Assist
+  digitalWrite(YELLOW, LOW);
+  digitalWrite(RED, HIGH);
+  for(int i=0; i<10; i++) {
+    digitalWrite(BUZZER, HIGH); delay(200);
+    digitalWrite(BUZZER, LOW);  delay(800);
+  }
+}`,
+                jsCode: `// Post Manual Override Command to Intersection Grid
+async function forceEmergencyGreen() {
+  await fetch('https://api.smartcity.io/v1/traffic/override', {
+    method: 'POST',
+    body: JSON.stringify({ intersection_id: "INT_02", status: "EMERGENCY_GREEN" }),
+    headers: { 'Content-Type': 'application/json' }
+  });
+}`
+            },
+            'surveillance': {
+                name: 'AI Edge Surveillance Node',
+                code: 'SYS-SV-03',
+                description: 'ស្ថានីយ៍កាមេរ៉ាសុវត្ថិភាពឆ្លាតវៃដំណើរការលើ Raspberry Pi គួបផ្សំនឹងកាមេរ៉ា Module ដើម្បីចាប់យករូបភាព ស្លាកលេខរថយន្ត និងវាយតម្លៃចរាចរណ៍តាមរយៈ Edge AI Computer Vision។',
+                components: [
+                    { name: 'Raspberry Pi 4 Model B', img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=150&q=80', qty: 1, desc: 'Powerful micro-computer running localized Linux & TensorFlow models.' },
+                    { name: 'Raspberry Pi Camera Module v2', img: 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=150&q=80', qty: 1, desc: 'Native high definition camera directly connected via CSI Ribbon cable interface.' }
+                ],
+                wiring: [
+                    { source: 'Camera CSI Ribbon', target: 'Raspberry Pi CSI Interface Port', color: 'text-cyan-400' },
+                    { source: 'Power Input', target: 'USB-C Type Main Supply (5V 3A)', color: 'text-red-400' },
+                    { source: 'Network Interface', target: 'Gigabit Ethernet Line / Wi-Fi', color: 'text-blue-400' }
+                ],
+                mcuCode: `# Python OpenCV Computer Vision Stream snippet (Raspberry Pi Node)
+import cv2
+
+camera = cv2.VideoCapture(0)
+print("Edge AI Model loading complete...")
+
+while True:
+    ret, frame = camera.read()
+    if not ret: break
+    
+    # Machine learning / Object recognition preprocessing logic would execute here
+    # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    
+    cv2.imshow("Smart City Stream Feed", frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+camera.release()
+cv2.destroyAllWindows()`,
+                jsCode: `// Real-time WebRTC/RTSP Stream URL integration request
+function loadCameraStream() {
+  const videoElement = document.getElementById('city-live-feed');
+  videoElement.src = "https://stream.smartcity.io/live/zone_c_edge_stream.m3u8";
+}`
+            },
+            'environment': {
+                name: 'Climate & Air Quality Sensor Node',
+                code: 'SYS-ENV-04',
+                description: 'ប្រព័ន្ធត្រួតពិនិត្យអាកាសធាតុ បរិយាកាស និងកម្រិតផ្សែងពុលក្នុងទីក្រុង។ បង្ហាញទិន្នន័យជាក់ស្តែងតាមរយៈ I2C LCD Display និងបញ្ជូនទៅផ្ទាំងគ្រប់គ្រងរដ្ឋបាល។',
+                components: [
+                    { name: 'ESP32 Development Board', img: 'https://images.unsplash.com/photo-1553406830-ef2513450d76?auto=format&fit=crop&w=150&q=80', qty: 1, desc: 'Primary low power microcontroller managing distributed telemetry loops.' },
+                    { name: 'I2C LCD 1602 Display', img: 'https://images.unsplash.com/photo-1603732551658-5f913fa691f7?auto=format&fit=crop&w=150&q=80', qty: 1, desc: 'Alphanumeric character layout module using just 2 lines data architecture.' }
+                ],
+                wiring: [
+                    { source: 'LCD VCC / GND', target: 'ESP32 Vin (5V) / GND Pin', color: 'text-red-400' },
+                    { source: 'LCD I2C SDA Line', target: 'ESP32 GPIO 21 (Data Line)', color: 'text-cyan-400' },
+                    { source: 'LCD I2C SCL Line', target: 'ESP32 GPIO 22 (Clock Line)', color: 'text-amber-400' }
+                ],
+                mcuCode: `// Weather Monitoring Node Source
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+void setup() {
+  Wire.begin(21, 22); // Explicit SDA, SCL definition
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("Smart City Env");
+}
+
+void loop() {
+  // Simulating retrieval parameters
+  float mockTemp = 32.4;
+  float mockAQI = 45.0; 
+  
+  lcd.setCursor(0, 1);
+  lcd.print("T: " + String(mockTemp) + "C AQI: " + String(mockAQI));
+  delay(3000);
+}`,
+                jsCode: `// Send Climate Telemetry Packet To Administrative Center
+async function broadcastSensorData(temp, aqi) {
+  await fetch('https://api.smartcity.io/v1/environment/telemetry', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ node_id: "ENV_NODE_04", temperature: temp, air_quality_index: aqi })
+  });
+}`
+            }
+        };
+
+        let currentActiveKey = null;
+
+        function selectArea(key) {
+            currentActiveKey = key;
+            const data = smartCityData[key];
+            if (!data) return;
+
+            // Toggle Visual Paneling Visibility State
+            document.getElementById('panel-placeholder').classList.add('hidden');
+            document.getElementById('panel-content').classList.remove('hidden');
+
+            // Render Meta Header Content
+            document.getElementById('p-zone-code').innerText = data.code;
+            document.getElementById('p-area-name').innerText = data.name;
+            document.getElementById('p-description').innerText = data.description;
+
+            // Render Component Data Matrix
+            const componentContainer = document.getElementById('p-components-list');
+            componentContainer.innerHTML = '';
+            data.components.forEach(comp => {
+                componentContainer.innerHTML += `
+                    <div class="flex items-center gap-3 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/80">
+                        <img src="${comp.img}" alt="${comp.name}" class="w-11 h-11 object-cover rounded-lg border border-slate-700/50 bg-slate-950">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-center">
+                                <h5 class="text-xs font-semibold text-white truncate">${comp.name}</h5>
+                                <span class="text-[10px] bg-slate-800 text-slate-300 font-mono px-1.5 py-0.5 rounded border border-slate-700">Qty: ${comp.qty}</span>
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-0.5 leading-snug line-clamp-2">${comp.desc}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Render Circuit Pin Out Content
+            const wiringTable = document.getElementById('p-wiring-table');
+            wiringTable.innerHTML = '';
+            data.wiring.forEach(wire => {
+                wiringTable.innerHTML += `
+                    <div class="flex items-center justify-between border-b border-slate-900 pb-1.5 last:border-0 last:pb-0">
+                        <span class="text-slate-400 text-left truncate max-w-[150px]">${wire.source}</span>
+                        <span class="text-slate-500 text-xs px-2"><i class="fa-solid fa-arrow-right-long"></i></span>
+                        <span class="${wire.color} text-right font-medium">${wire.target}</span>
+                    </div>
+                `;
+            });
+
+            // Populate Code blocks
+            document.getElementById('p-mcu-code').innerText = data.mcuCode;
+            document.getElementById('p-js-code').innerText = data.jsCode;
+
+            // Reset back to initial overview summary tab
+            switchTab('specs');
+        }
+
+        function switchTab(tabId) {
+            // Setup array references
+            const tabButtons = ['specs', 'wiring', 'code'];
+            
+            tabButtons.forEach(btnKey => {
+                const element = document.getElementById(`tab-content-${btnKey}`);
+                const btn = document.getElementById(`tab-btn-${btnKey}`);
+                
+                if (btnKey === tabId) {
+                    element.classList.remove('hidden');
+                    btn.classList.add('bg-blue-600', 'text-white');
+                    btn.classList.remove('text-slate-400', 'hover:text-slate-200');
+                } else {
+                    element.classList.add('hidden');
+                    btn.classList.remove('bg-blue-600', 'text-white');
+                    btn.classList.add('text-slate-400', 'hover:text-slate-200');
+                }
+            });
+        }
+
+        function closePanel() {
+            document.getElementById('panel-content').classList.add('hidden');
+            document.getElementById('panel-placeholder').classList.remove('hidden');
+            currentActiveKey = null;
+        }
+    </script>
+</body>
+</html>
